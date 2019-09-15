@@ -37,19 +37,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <ImageView
-                android:src="@drawable/ic_pin_drop_black_24dp"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" />
-
-            <fragment
-                android:id="@+id/placeAutocompleteFragment"
-                android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-                android:layout_width="0dp"
+            <android.support.v7.widget.AppCompatAutoCompleteTextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="5" />
+                android:layout_gravity="center_vertical"
+                android:hint="Search...."
+                android:id="@+id/autoSearchPlaces"/>
 
         </LinearLayout>
 

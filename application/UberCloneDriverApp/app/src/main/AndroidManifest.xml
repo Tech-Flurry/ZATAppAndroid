@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sparkers.zatapp">
+    package="com.sparkers.zatappdriver">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -16,13 +16,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.sparkers.zatapp.Activities.TripHistory"></activity>
+        <activity android:name="com.sparkers.zatappdriver.Activities.TripHistory"></activity>
 
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity android:name="com.sparkers.zatapp.Activities.Login">
+        <activity android:name="com.sparkers.zatappdriver.Activities.Login">
 
         </activity>
         <!--
@@ -37,27 +37,27 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name="com.sparkers.zatapp.Activities.CustommerCall" />
+        <activity android:name="com.sparkers.zatappdriver.Activities.CustommerCall" />
 
-        <service android:name="com.sparkers.zatapp.Service.FirebaseIdService">
+        <service android:name="com.sparkers.zatappdriver.Service.FirebaseIdService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <service android:name="com.sparkers.zatapp.Service.firebaseMessaging">
+        <service android:name="com.sparkers.zatappdriver.Service.firebaseMessaging">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
         <activity
-            android:name="com.sparkers.zatapp.Activities.DriverTracking"
+            android:name="com.sparkers.zatappdriver.Activities.DriverTracking"
             android:label="@string/title_activity_driver_tracking" />
         <activity
-            android:name="com.sparkers.zatapp.Activities.TripDetail"
+            android:name="com.sparkers.zatappdriver.Activities.TripDetail"
             android:label="@string/title_activity_trip_detail" />
         <activity
-            android:name="com.sparkers.zatapp.Activities.DriverHome"
+            android:name="com.sparkers.zatappdriver.Activities.DriverHome"
             android:label="@string/title_activity_drawer_home"
             android:theme="@style/AppTheme" >
             <intent-filter>

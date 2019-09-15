@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">UberClone</string>
+    <string name="app_name">ZAT</string>
     <string name="title_activity_main">Map</string>
-    <string name="google_direction_api">AIzaSyDcUwk5nBq2FTZsbWDVt1gQKW1MZYw5Ioo</string>
+    <string name="google_direction_api">@string/google_maps_key</string>
     <string name="tv_login_title">DRIVER</string>
-    <string name="tv_login_subtitle">UBER CLONE</string>
+    <string name="tv_login_subtitle">ZAT</string>
     <string name="login">LOG IN</string>
     <string name="signin">SIGN IN</string>
     <string name="btn_accept">ACCEPT</string>
@@ -31,7 +31,7 @@
     <string name="phone">Phone</string>
     <string name="title_activity_driver_tracking">Map</string>
     <string name="title_activity_trip_detail">Map</string>
-    <string name="title_activity_drawer_home">DrawerHome</string>
+    <string name="title_activity_drawer_home">ZAT-Driver</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
