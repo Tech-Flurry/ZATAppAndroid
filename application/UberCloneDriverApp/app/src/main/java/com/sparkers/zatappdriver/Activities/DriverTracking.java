@@ -449,7 +449,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
     @Override
     protected void onResume() {
         super.onResume();
-        location.inicializeLocation();
+        location.initializeLocation();
     }
 
     @Override

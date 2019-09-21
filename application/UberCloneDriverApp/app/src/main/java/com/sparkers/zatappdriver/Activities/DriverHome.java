@@ -30,7 +30,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -46,21 +45,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.login.LoginManager;
 import com.firebase.geofire.GeoFire;
-import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationResult;
@@ -82,25 +72,16 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.google.maps.android.SphericalUtil;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -109,13 +90,9 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.sparkers.zatappdriver.Common.Common;
-import com.sparkers.zatappdriver.GoogleAPIRoutesRequest.GoogleMapsAPIRequest;
-import com.sparkers.zatappdriver.Interfaces.googleAPIInterface;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
-import com.sparkers.zatappdriver.Messages.Messages;
-import com.sparkers.zatappdriver.Model.Token;
 import com.sparkers.zatappdriver.Model.User;
 import com.sparkers.zatappdriver.R;
 import com.sparkers.zatappdriver.Util.Location;
@@ -126,7 +103,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,15 +110,13 @@ import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
-import retrofit2.Call;
-import retrofit2.Callback;
 
 public class DriverHome extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     Toolbar toolbar;
     Location location=null;
     private GoogleMap mMap;
-    Marker currentLocationMarket;
+    Marker currentLocationMarker;
     GoogleSignInAccount account;
 
     GeoFire geoFire;
@@ -253,20 +227,18 @@ public class DriverHome extends AppCompatActivity
                     }
                 });
                 queue.add(request);
-                locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/ChangeActiveStatus/true";
-                request= new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("ActiveStatus",error.getMessage());
-                    }
-                });
-                queue.add(request);
+                setActiveStatus(true);
                 displayLocation();
+                if (destination!=null){
+
+                    if(currentLocationMarker!=null)
+                        currentLocationMarker.remove();
+                    if(blackPolyline!=null)
+                        blackPolyline.remove();
+                    if(greyPolyline!=null)
+                        greyPolyline.remove();
+                    getDirection();
+                }
             }
         });
         locationSwitch=findViewById(R.id.locationSwitch);
@@ -274,14 +246,15 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b){
-                    location.inicializeLocation();
+                    location.initializeLocation();
                 }else{
                     location.stopUpdateLocation();
-                    currentLocationMarket.remove();
+                    currentLocationMarker.remove();
                     mMap.clear();
+                    setActiveStatus(false);
                     //handler.removeCallbacks(drawPathRunnable);
-                    if (currentLocationMarket!=null)
-                        currentLocationMarket.remove();
+                    if (currentLocationMarker !=null)
+                        currentLocationMarker.remove();
                 }
             }
         });
@@ -345,7 +318,23 @@ public class DriverHome extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         setUpLocation();
-        //updateFirebaseToken();
+    }
+
+    private void setActiveStatus(boolean status) {
+        RequestQueue queue=Volley.newRequestQueue(DriverHome.this);
+        String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/ChangeActiveStatus/"+status;
+        JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("ActiveStatus",error.getMessage());
+            }
+        });
+        queue.add(request);
     }
 
     public void initDrawer(){
@@ -452,7 +441,7 @@ public class DriverHome extends AppCompatActivity
                             mMap.addMarker(new MarkerOptions().position(polyLineList.get(polyLineList.size() - 1))
                                     .title("Pickup location"));
 
-                            ValueAnimator polylineAnimator = ValueAnimator.ofInt(0, 100);
+                            final ValueAnimator polylineAnimator = ValueAnimator.ofInt(0, 100);
                             polylineAnimator.setDuration(2000);
                             polylineAnimator.setInterpolator(new LinearInterpolator());
                             polylineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -464,16 +453,27 @@ public class DriverHome extends AppCompatActivity
                                     int newPoints = (int) (size * (percentValue / 100.0f));
 
                                     List<LatLng> p = points.subList(0, newPoints);
+                                    LatLng oldPosition=polyLineList.get(0);
+                                    LatLng newPosition= polyLineList.get(1);
                                     blackPolyline.setPoints(p);
+                                    if(carMarker!=null){
+                                        carMarker.setPosition(currentPosition);
+                                    }
+                                    else {
+                                        carMarker = mMap.addMarker(new MarkerOptions().position(currentPosition).flat(true)
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+                                        carMarker.setAnchor(0.5f, 0.5f);
+                                    }
+                                        carMarker.setRotation(getBearing(oldPosition, newPosition));
+                                        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(newPosition).zoom(15.5f).build()));
                                 }
                             });
                             polylineAnimator.start();
-                            carMarker = mMap.addMarker(new MarkerOptions().position(currentPosition).flat(true)
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
-                            handler = new Handler();
-                            index = -1;
-                            next = -1;
-                            handler.postDelayed(drawPathRunnable, 3000);
+
+                            //handler = new Handler();
+                            //index = -1;
+                            //next = -1;
+                            //handler.postDelayed(drawPathRunnable, 3000);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -486,73 +486,7 @@ public class DriverHome extends AppCompatActivity
                 }
             });
             queue.add(request);
-            /*mService.getPath(requestApi).enqueue(new Callback<String>() {
-                @Override
-                public void onResponse(Call<String> call, Response<String> response) {
-                    Gson gson = new Gson();
-                    GoogleMapsAPIRequest requestObject = gson.fromJson(response.body().toString(), GoogleMapsAPIRequest.class);
-                    Log.d("RESPONSE", response.body().toString());
-                    for (int i = 0; i < requestObject.routes.size(); i++) {
-                        polyLineList = decodePoly(requestObject.routes.get(i).overview_polyline.points);
-                    }
-                    if (!polyLineList.isEmpty()) {
-                        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                        for (LatLng latLng : polyLineList)
-                            builder = builder.include(latLng);
-                        LatLngBounds bounds = builder.build();
-                        CameraUpdate mCameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 2);
-                        mMap.animateCamera(mCameraUpdate);
 
-                        polylineOptions = new PolylineOptions();
-                        polylineOptions.color(Color.GRAY);
-                        polylineOptions.width(5);
-                        polylineOptions.startCap(new SquareCap());
-                        polylineOptions.endCap(new SquareCap());
-                        polylineOptions.jointType(JointType.ROUND);
-                        polylineOptions.addAll(polyLineList);
-                        greyPolyline = mMap.addPolyline(polylineOptions);
-
-                        blanckPolylineOptions = new PolylineOptions();
-                        blanckPolylineOptions.color(Color.BLACK);
-                        blanckPolylineOptions.width(5);
-                        blanckPolylineOptions.startCap(new SquareCap());
-                        blanckPolylineOptions.endCap(new SquareCap());
-                        blanckPolylineOptions.jointType(JointType.ROUND);
-                        blackPolyline = mMap.addPolyline(blanckPolylineOptions);
-
-                        mMap.addMarker(new MarkerOptions().position(polyLineList.get(polyLineList.size() - 1))
-                                .title("Pickup location"));
-
-                        ValueAnimator polylineAnimator = ValueAnimator.ofInt(0, 100);
-                        polylineAnimator.setDuration(2000);
-                        polylineAnimator.setInterpolator(new LinearInterpolator());
-                        polylineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                            @Override
-                            public void onAnimationUpdate(ValueAnimator animation) {
-                                List<LatLng> points = greyPolyline.getPoints();
-                                int percentValue = (int) animation.getAnimatedValue();
-                                int size = points.size();
-                                int newPoints = (int) (size * (percentValue / 100.0f));
-
-                                List<LatLng> p = points.subList(0, newPoints);
-                                blackPolyline.setPoints(p);
-                            }
-                        });
-                        polylineAnimator.start();
-                        carMarker = mMap.addMarker(new MarkerOptions().position(currentPosition).flat(true)
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
-                        handler = new Handler();
-                        index = -1;
-                        next = -1;
-                        handler.postDelayed(drawPathRunnable, 3000);
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<String> call, Throwable t) {
-                    Toast.makeText(getApplicationContext(), t.getMessage().toString(), Toast.LENGTH_SHORT).show();
-                }
-            });*/
     }
 
     private List decodePoly(String encoded) {
@@ -642,12 +576,12 @@ public class DriverHome extends AppCompatActivity
                         .build();
 
                 LatLng currentLocation = new LatLng(Common.currentLat, Common.currentLng);
-                if (currentLocationMarket != null) currentLocationMarket.remove();
+                if (currentLocationMarker != null) currentLocationMarker.remove();
 
-                currentLocationMarket = mMap.addMarker(new MarkerOptions().position(currentLocation)
+                currentLocationMarker = mMap.addMarker(new MarkerOptions().position(currentLocation)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
                         .title("Your Location"));
-                mMap.setLatLngBoundsForCameraTarget(bounds);
+                //mMap.setLatLngBoundsForCameraTarget(bounds);
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Common.currentLat, Common.currentLng), 15.0f));
             }
         }else{
@@ -656,10 +590,10 @@ public class DriverHome extends AppCompatActivity
 
     }
 
-    private void rotateMarket(Marker marker, final float degrees, GoogleMap mMap){
+    private void rotateMarker(Marker marker, final float degrees, GoogleMap mMap){
         final Handler handler=new Handler();
         long start= SystemClock.uptimeMillis();
-        final float startRotation=currentLocationMarket.getRotation();
+        final float startRotation= marker.getRotation();
         final long duration=1500;
 
         final Interpolator interpolator=new LinearInterpolator();
@@ -670,7 +604,7 @@ public class DriverHome extends AppCompatActivity
                 float t=interpolator.getInterpolation((float)elapsed/duration);
                 float rot=t*degrees+(1-t)*startRotation;
 
-                currentLocationMarket.setRotation(-rot>180?rot/2:rot);
+                currentLocationMarker.setRotation(-rot>180?rot/2:rot);
                 if (t<1.0){
                     handler.postDelayed(this, 16);
                 }
@@ -681,10 +615,10 @@ public class DriverHome extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setTrafficEnabled(false);
+        mMap.setTrafficEnabled(true);
         mMap.setIndoorEnabled(false);
         mMap.setBuildingsEnabled(false);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(false);
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
     }
 
@@ -711,7 +645,7 @@ public class DriverHome extends AppCompatActivity
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         displayLocation();
-        location.inicializeLocation();
+        location.initializeLocation();
     }
 
     @Override
@@ -727,7 +661,7 @@ public class DriverHome extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        location.inicializeLocation();
+        location.initializeLocation();
     }
 
     @Override
@@ -1095,6 +1029,13 @@ public class DriverHome extends AppCompatActivity
 
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        setActiveStatus(false);
+    }
+
     private class PlaceItems{
         public PlaceItems(String id, String name) {
             Id = id;

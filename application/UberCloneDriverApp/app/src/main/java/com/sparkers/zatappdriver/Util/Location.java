@@ -66,7 +66,7 @@ public class Location {
                 break;
         }
     }
-    public void inicializeLocation(){
+    public void initializeLocation(){
         if (validatePermissionsLocation())getLocation();
         else requestPermissions();
     }
