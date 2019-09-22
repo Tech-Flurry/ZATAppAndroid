@@ -34,7 +34,7 @@ public class TripDetail extends FragmentActivity implements OnMapReadyCallback {
         txtDate=(TextView)findViewById(R.id.txtDate);
         txtFee=(TextView)findViewById(R.id.txtFee);
         txtBaseFare=(TextView)findViewById(R.id.txtBaseFare);
-        txtTime=(TextView)findViewById(R.id.txtTime);
+        txtTime=(TextView)findViewById(R.id.txtDuration);
         txtDistance=(TextView)findViewById(R.id.txtDistance);
         txtEstimatedPayout=(TextView)findViewById(R.id.txtEstimatedPayout);
         txtFrom=(TextView)findViewById(R.id.txtFrom);

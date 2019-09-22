@@ -15,12 +15,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.NavigationView;
+import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -34,7 +36,9 @@ import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -117,7 +121,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 
 public class DriverHome extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback{
     Toolbar toolbar;
     Location location=null;
     private GoogleMap mMap;
@@ -126,7 +130,7 @@ public class DriverHome extends AppCompatActivity
     RequestQueue queue;
     GeoFire geoFire;
     boolean markerFlag=false; //use to set zoom and position of the location marker
-
+    boolean cardClickFlag=false;
     private GoogleApiClient mGoogleApiClient;
 
     private static final int REQUEST_CODE_PERMISSION=100;
@@ -148,7 +152,12 @@ public class DriverHome extends AppCompatActivity
     private Polyline blackPolyline, greyPolyline;
     protected NavigationView navigationView;
     private AutoCompleteTextView autoSearchPlaces;
-
+    private ImageButton btnMyLocation;
+    private CardView cardInfo;
+    private CardView cardDestinationInfo;
+    private TextView txtDistance;
+    private TextView txtDuration;
+    private Button btnEndRide;
     StorageReference storageReference;
 
 
@@ -173,6 +182,23 @@ public class DriverHome extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawer_home);
+        cardInfo=findViewById(R.id.cardInfo);
+        cardDestinationInfo=findViewById(R.id.cardDestinationDetails);
+        txtDistance=findViewById(R.id.txtDistance);
+        txtDuration=findViewById(R.id.txtDuration);
+        btnEndRide=findViewById(R.id.btnEndRide);
+        btnEndRide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                destination=null;
+                carMarker.remove();
+                carMarker=null;
+                blackPolyline.remove();
+                greyPolyline.remove();
+                TransitionManager.beginDelayedTransition(cardDestinationInfo);
+                cardDestinationInfo.setVisibility(View.INVISIBLE);
+            }
+        });
         queue=Volley.newRequestQueue(DriverHome.this);
         verifyUserAccount();
         toolbar = findViewById(R.id.toolbar);
@@ -204,11 +230,14 @@ public class DriverHome extends AppCompatActivity
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b){
                     location.initializeLocation();
+                    btnMyLocation.setVisibility(View.VISIBLE);
                 }else{
                     location.stopUpdateLocation();
                     currentLocationMarker.remove();
                     mMap.clear();
                     setActiveStatus(false);
+                    btnMyLocation.setVisibility(View.INVISIBLE);
+                    cardDestinationInfo.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -262,6 +291,13 @@ public class DriverHome extends AppCompatActivity
             }
         });
         //~Places Auto Complete
+        btnMyLocation=findViewById(R.id.btnMyLocation);
+        btnMyLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                markerFlag=false;
+            }
+        });
         polyLineList=new ArrayList<>();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -375,6 +411,11 @@ public class DriverHome extends AppCompatActivity
                     try {
                         routes = response.getJSONArray("routes");
                         JSONObject route= routes.getJSONObject(0);
+                        JSONObject distance=route.getJSONArray("legs").getJSONObject(0).getJSONObject("distance");
+                        JSONObject duration=route.getJSONArray("legs").getJSONObject(0).getJSONObject("duration");
+                        txtDistance.setText(distance.getString("text"));
+                        txtDuration.setText(duration.getString("text"));
+                        cardDestinationInfo.setVisibility(View.VISIBLE);
                         String encodedPolyline = route.getJSONObject("overview_polyline").getString("points");
                         polyLineList=decodePoly(encodedPolyline);
                         if (!polyLineList.isEmpty()) {
@@ -492,21 +533,12 @@ public class DriverHome extends AppCompatActivity
             }, REQUEST_CODE_PERMISSION);
         }else{
             if (checkPlayServices()){
-                buildGoogleApiClient();
+                //buildGoogleApiClient();
                 if (locationSwitch.isChecked()){
                     displayLocation();
                 }
             }
         }
-    }
-
-    private void buildGoogleApiClient() {
-        mGoogleApiClient=new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        mGoogleApiClient.connect();
     }
 
     private boolean checkPlayServices() {
@@ -530,10 +562,6 @@ public class DriverHome extends AppCompatActivity
                 LatLng northSide=SphericalUtil.computeOffset(center, 100000, 0);
                 LatLng southSide=SphericalUtil.computeOffset(center, 100000, 180);
 
-                LatLngBounds bounds=LatLngBounds.builder()
-                        .include(northSide)
-                        .include(southSide)
-                        .build();
 
                 LatLng currentLocation = new LatLng(Common.currentLat, Common.currentLng);
                 if (currentLocationMarker != null) currentLocationMarker.remove();
@@ -541,7 +569,6 @@ public class DriverHome extends AppCompatActivity
                 currentLocationMarker = mMap.addMarker(new MarkerOptions().position(currentLocation)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
                         .title("Your Location"));
-                //mMap.setLatLngBoundsForCameraTarget(bounds);
                 float zoom=15.0f;
                 LatLng position=new LatLng(Common.currentLat,Common.currentLng);
                 if(markerFlag){
@@ -557,35 +584,16 @@ public class DriverHome extends AppCompatActivity
 
     }
 
-    private void rotateMarker(Marker marker, final float degrees, GoogleMap mMap){
-        final Handler handler=new Handler();
-        long start= SystemClock.uptimeMillis();
-        final float startRotation= marker.getRotation();
-        final long duration=1500;
-
-        final Interpolator interpolator=new LinearInterpolator();
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                long elapsed=SystemClock.uptimeMillis();
-                float t=interpolator.getInterpolation((float)elapsed/duration);
-                float rot=t*degrees+(1-t)*startRotation;
-
-                currentLocationMarker.setRotation(-rot>180?rot/2:rot);
-                if (t<1.0){
-                    handler.postDelayed(this, 16);
-                }
-            }
-        });
-    }
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setTrafficEnabled(true);
-        mMap.setIndoorEnabled(false);
-        mMap.setBuildingsEnabled(false);
+        mMap.setIndoorEnabled(true);
+        mMap.setBuildingsEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mMap.getUiSettings().setScrollGesturesEnabled(true);
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
     }
 
@@ -598,7 +606,7 @@ public class DriverHome extends AppCompatActivity
                 if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
                     location.onRequestPermissionResult(requestCode, permissions, grantResults);
                     if (checkPlayServices()){
-                        buildGoogleApiClient();
+                        //buildGoogleApiClient();
                         if (locationSwitch.isChecked())displayLocation();
                     }
                 }
@@ -609,21 +617,6 @@ public class DriverHome extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        displayLocation();
-        location.initializeLocation();
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
 
     @Override
     protected void onStart() {
