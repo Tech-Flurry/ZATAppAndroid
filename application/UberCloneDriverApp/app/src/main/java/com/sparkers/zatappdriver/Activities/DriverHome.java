@@ -120,6 +120,7 @@ public class DriverHome extends AppCompatActivity
     GoogleSignInAccount account;
     RequestQueue queue;
     GeoFire geoFire;
+    boolean markerFlag=false; //use to set zoom and position of the location marker
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -567,7 +568,14 @@ public class DriverHome extends AppCompatActivity
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
                         .title("Your Location"));
                 //mMap.setLatLngBoundsForCameraTarget(bounds);
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Common.currentLat, Common.currentLng), 15.0f));
+                float zoom=15.0f;
+                LatLng position=new LatLng(Common.currentLat,Common.currentLng);
+                if(markerFlag){
+                    zoom=mMap.getCameraPosition().zoom;
+                    position=mMap.getCameraPosition().target;
+                }
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
+                markerFlag=true;
             }
         }else{
             Message.messageError(this, Errors.WITHOUT_LOCATION);
