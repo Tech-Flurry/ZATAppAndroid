@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -35,6 +36,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -82,6 +84,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.JsonObject;
 import com.google.maps.android.SphericalUtil;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -90,6 +93,8 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.sparkers.zatappdriver.Common.Common;
+import com.sparkers.zatappdriver.Helpers.AutoCompleteAdapter;
+import com.sparkers.zatappdriver.Helpers.PlacesAutoCompleteModel;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
@@ -138,7 +143,7 @@ public class DriverHome extends AppCompatActivity
     private Handler handler;
     private LatLng startPosition, endPosition, currentPosition;
     private int index, next;
-    private String destination;
+    private LatLng destination;
     private PolylineOptions polylineOptions, blanckPolylineOptions;
     private Polyline blackPolyline, greyPolyline;
     protected NavigationView navigationView;
@@ -146,38 +151,6 @@ public class DriverHome extends AppCompatActivity
 
     StorageReference storageReference;
 
-    Runnable drawPathRunnable=new Runnable() {
-        @Override
-        public void run() {
-            if (index<polyLineList.size()-1){
-                index++;
-                next=index+1;
-            }
-            if (index<polyLineList.size()-1){
-                startPosition=polyLineList.get(index);
-                endPosition=polyLineList.get(next);
-            }
-            final ValueAnimator valueAnimator=ValueAnimator.ofFloat(0,1);
-            valueAnimator.setDuration(3000);
-            valueAnimator.setInterpolator(new LinearInterpolator());
-            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    v=valueAnimator.getAnimatedFraction();
-                    lng=v*endPosition.longitude+(1-v)*startPosition.longitude;
-                    lat=v*endPosition.latitude+(1-v)*startPosition.latitude;
-                    LatLng newPos=new LatLng(lat, lng);
-                    carMarker.setPosition(newPos);
-                    carMarker.setAnchor(0.5f, 0.5f);
-                    carMarker.setRotation(getBearing(startPosition, newPos));
-                    mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(newPos).zoom(15.5f).build()));
-
-                }
-            });
-            valueAnimator.start();
-            handler.postDelayed(this, 3000);
-        }
-    };
 
     private float getBearing(LatLng startPosition, LatLng endPosition) {
         double lat=Math.abs(startPosition.latitude-endPosition.latitude);
@@ -248,18 +221,19 @@ public class DriverHome extends AppCompatActivity
                 if (keyEvent.getAction()==KeyEvent.ACTION_UP){
                     final AutoCompleteTextView autoCompleteTextView= (AutoCompleteTextView)view;
                     String query= autoCompleteTextView.getText().toString();
-                    final List<String> lstPlaces= new ArrayList<>();
-                        String placesUrl="https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+query+"&inputtype=textquery&fields=formatted_address,name&key="+getString(R.string.google_maps_key)+"&locationbias=rectangle:"+Common.APPLICATION_SERVICE_BOUNDS.southwest.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude+"|"+Common.APPLICATION_SERVICE_BOUNDS.northeast.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude;
+                    final ArrayList<PlacesAutoCompleteModel> lstPlaces= new ArrayList<>();
+                        String placesUrl="https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+query+"&inputtype=textquery&fields=formatted_address,name,geometry/location&key="+getString(R.string.google_maps_key)+"&locationbias=rectangle:"+Common.APPLICATION_SERVICE_BOUNDS.southwest.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude+"|"+Common.APPLICATION_SERVICE_BOUNDS.northeast.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude;
                         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, placesUrl, "", new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
                                 try {
                                     JSONArray candidates=response.getJSONArray("candidates");
                                     for (int i=0; i<candidates.length();i++){
-                                        String name=candidates.getJSONObject(i).getString("name")+", "+candidates.getJSONObject(i).getString("formatted_address");
-                                        lstPlaces.add(name);
+                                        JSONObject locationObject= candidates.getJSONObject(i).getJSONObject("geometry").getJSONObject("location");
+                                        LatLng location= new LatLng(locationObject.getDouble("lat"),locationObject.getDouble("lng"));
+                                        lstPlaces.add(new PlacesAutoCompleteModel(candidates.getJSONObject(i).getString("name").toUpperCase(),candidates.getJSONObject(i).getString("formatted_address"),location));
                                     }
-                                    ArrayAdapter<String> adapter= new ArrayAdapter<>(DriverHome.this,android.R.layout.simple_dropdown_item_1line,lstPlaces);
+                                    AutoCompleteAdapter adapter= new AutoCompleteAdapter(lstPlaces,DriverHome.this);
                                     autoSearchPlaces.setAdapter(adapter);
                                     autoSearchPlaces.showDropDown();
                                 } catch (JSONException e) {
@@ -282,9 +256,9 @@ public class DriverHome extends AppCompatActivity
         autoSearchPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView autoCompleteTextView=(TextView)view;
-                destination=autoCompleteTextView.getText().toString();
-                getDirection();
+                LinearLayout placeItem=(LinearLayout)view;
+                destination= (LatLng)placeItem.getTag();
+                autoSearchPlaces.clearFocus();
             }
         });
         //~Places Auto Complete
@@ -392,7 +366,7 @@ public class DriverHome extends AppCompatActivity
         final String requestApi;
             requestApi="https://maps.googleapis.com/maps/api/directions/json?mode=driving&" +
                     "transit_routing_preference=less_driving&origin="+Common.currentLat+","+Common.currentLng+"&" +
-                    "destination="+destination+"&key="+getResources().getString(R.string.google_maps_key);
+                    "destination="+destination.latitude+","+destination.longitude+"&key="+getResources().getString(R.string.google_maps_key);
             Log.d("URL_MAPS", requestApi);
             JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestApi, "", new Response.Listener<JSONObject>() {
                 @Override

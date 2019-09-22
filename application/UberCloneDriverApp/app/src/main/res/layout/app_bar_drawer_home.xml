@@ -42,7 +42,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:hint="Search...."
-                android:id="@+id/autoSearchPlaces"/>
+                android:drawableLeft="@drawable/ic_search_grey_24dp"
+                android:id="@+id/autoSearchPlaces"
+                android:layout_margin="5dp"/>
 
         </LinearLayout>
 
