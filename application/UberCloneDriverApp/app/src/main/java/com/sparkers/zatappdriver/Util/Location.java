@@ -28,7 +28,7 @@ public class Location {
         this.activity=activity;
         fusedLocationClient=new FusedLocationProviderClient(activity.getApplicationContext());
 
-        inicializeLocationRequest();
+        initializeLocationRequest();
         locationCallback=new LocationCallback(){
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -37,9 +37,9 @@ public class Location {
             }
         };
     }
-    private void inicializeLocationRequest(){
+    private void initializeLocationRequest(){
         locationRequest=new LocationRequest();
-        locationRequest.setInterval(10000);
+        locationRequest.setInterval(10*1000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
@@ -67,7 +67,8 @@ public class Location {
         }
     }
     public void initializeLocation(){
-        if (validatePermissionsLocation())getLocation();
+        if (validatePermissionsLocation())
+            getLocation();
         else requestPermissions();
     }
     public void stopUpdateLocation(){

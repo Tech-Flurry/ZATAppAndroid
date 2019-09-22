@@ -118,7 +118,7 @@ public class DriverHome extends AppCompatActivity
     private GoogleMap mMap;
     Marker currentLocationMarker;
     GoogleSignInAccount account;
-
+    RequestQueue queue;
     GeoFire geoFire;
 
     private GoogleApiClient mGoogleApiClient;
@@ -199,45 +199,28 @@ public class DriverHome extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawer_home);
+        queue=Volley.newRequestQueue(DriverHome.this);
         verifyUserAccount();
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        //firebaseStorage=FirebaseStorage.getInstance();
-        //storageReference=firebaseStorage.getReference();
-
-
-
         location=new Location(this, new locationListener() {
             @Override
             public void locationResponse(LocationResult response) {
                 Common.currentLat=response.getLastLocation().getLatitude();
                 Common.currentLng=response.getLastLocation().getLongitude();
-                String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/UpdateLocation?Latitude="+Common.currentLat+"&Longitude="+Common.currentLng;
-                RequestQueue queue=Volley.newRequestQueue(DriverHome.this);
-                JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("LocationUpdate",error.getMessage());
-                    }
-                });
-                queue.add(request);
+                updateLocation();
                 setActiveStatus(true);
-                displayLocation();
                 if (destination!=null){
 
                     if(currentLocationMarker!=null)
                         currentLocationMarker.remove();
                     if(blackPolyline!=null)
                         blackPolyline.remove();
-                    if(greyPolyline!=null)
+                    if (greyPolyline!=null)
                         greyPolyline.remove();
                     getDirection();
+                }else{
+                    displayLocation();
                 }
             }
         });
@@ -252,9 +235,6 @@ public class DriverHome extends AppCompatActivity
                     currentLocationMarker.remove();
                     mMap.clear();
                     setActiveStatus(false);
-                    //handler.removeCallbacks(drawPathRunnable);
-                    if (currentLocationMarker !=null)
-                        currentLocationMarker.remove();
                 }
             }
         });
@@ -268,9 +248,7 @@ public class DriverHome extends AppCompatActivity
                     final AutoCompleteTextView autoCompleteTextView= (AutoCompleteTextView)view;
                     String query= autoCompleteTextView.getText().toString();
                     final List<String> lstPlaces= new ArrayList<>();
-                    if(keyEvent.getKeyCode()==KeyEvent.KEYCODE_SPACE){
                         String placesUrl="https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+query+"&inputtype=textquery&fields=formatted_address,name&key="+getString(R.string.google_maps_key)+"&locationbias=rectangle:"+Common.APPLICATION_SERVICE_BOUNDS.southwest.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude+"|"+Common.APPLICATION_SERVICE_BOUNDS.northeast.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude;
-                        RequestQueue queue= Volley.newRequestQueue(DriverHome.this);
                         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, placesUrl, "", new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
@@ -295,8 +273,6 @@ public class DriverHome extends AppCompatActivity
                             }
                         });
                         queue.add(request);
-                    }
-
                     flag=true;
                 }
                 return flag;
@@ -320,8 +296,23 @@ public class DriverHome extends AppCompatActivity
         setUpLocation();
     }
 
+    private void updateLocation() {
+        String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/UpdateLocation?Latitude="+Common.currentLat+"&Longitude="+Common.currentLng;
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("LocationUpdate",error.getMessage());
+            }
+        });
+        queue.add(request);
+    }
+
     private void setActiveStatus(boolean status) {
-        RequestQueue queue=Volley.newRequestQueue(DriverHome.this);
         String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/ChangeActiveStatus/"+status;
         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
             @Override
@@ -338,18 +329,18 @@ public class DriverHome extends AppCompatActivity
     }
 
     public void initDrawer(){
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View navigationHeaderView=navigationView.getHeaderView(0);
-        TextView tvName=(TextView)navigationHeaderView.findViewById(R.id.tvDriverName);
-        TextView tvStars=(TextView)navigationHeaderView.findViewById(R.id.tvStars);
-        CircleImageView imageAvatar=(CircleImageView) navigationHeaderView.findViewById(R.id.imageAvatar);
+        TextView tvName= navigationHeaderView.findViewById(R.id.tvDriverName);
+        TextView tvStars= navigationHeaderView.findViewById(R.id.tvStars);
+        CircleImageView imageAvatar= navigationHeaderView.findViewById(R.id.imageAvatar);
 
         tvName.setText(Common.currentUser.getName());
         if(Common.currentUser.getRates()!=null &&
@@ -368,7 +359,6 @@ public class DriverHome extends AppCompatActivity
 
     private void loadUser(){
         String requestUrl=Common.ZAT_API_HOST+"drivers/"+Common.userID;
-        RequestQueue queue= Volley.newRequestQueue(DriverHome.this);
         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -403,7 +393,6 @@ public class DriverHome extends AppCompatActivity
                     "transit_routing_preference=less_driving&origin="+Common.currentLat+","+Common.currentLng+"&" +
                     "destination="+destination+"&key="+getResources().getString(R.string.google_maps_key);
             Log.d("URL_MAPS", requestApi);
-            RequestQueue queue= Volley.newRequestQueue(DriverHome.this);
             JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestApi, "", new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
@@ -419,8 +408,7 @@ public class DriverHome extends AppCompatActivity
                                 builder = builder.include(latLng);
                             LatLngBounds bounds = builder.build();
                             CameraUpdate mCameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 2);
-                            mMap.animateCamera(mCameraUpdate);
-
+                            //mMap.animateCamera(mCameraUpdate);
                             polylineOptions = new PolylineOptions();
                             polylineOptions.color(Color.GRAY);
                             polylineOptions.width(5);
@@ -465,15 +453,12 @@ public class DriverHome extends AppCompatActivity
                                         carMarker.setAnchor(0.5f, 0.5f);
                                     }
                                         carMarker.setRotation(getBearing(oldPosition, newPosition));
-                                        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(newPosition).zoom(15.5f).build()));
+                                    float zoom=mMap.getCameraPosition().zoom;
+                                    LatLng position= mMap.getCameraPosition().target;
+                                    mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(position).zoom(zoom).build()));
                                 }
                             });
                             polylineAnimator.start();
-
-                            //handler = new Handler();
-                            //index = -1;
-                            //next = -1;
-                            //handler.postDelayed(drawPathRunnable, 3000);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -618,7 +603,7 @@ public class DriverHome extends AppCompatActivity
         mMap.setTrafficEnabled(true);
         mMap.setIndoorEnabled(false);
         mMap.setBuildingsEnabled(false);
-        mMap.getUiSettings().setZoomControlsEnabled(false);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
     }
 
@@ -661,12 +646,12 @@ public class DriverHome extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        location.initializeLocation();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        setActiveStatus(false);
         location.stopUpdateLocation();
     }
 
@@ -1028,12 +1013,6 @@ public class DriverHome extends AppCompatActivity
             });
 
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        setActiveStatus(false);
     }
 
     private class PlaceItems{
