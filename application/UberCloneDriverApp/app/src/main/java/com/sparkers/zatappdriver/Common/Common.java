@@ -4,7 +4,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.sparkers.zatappdriver.Interfaces.IFCMService;
 import com.sparkers.zatappdriver.Interfaces.googleAPIInterface;
-import com.sparkers.zatappdriver.Model.User;
+import com.sparkers.zatappdriver.Model.Driver;
 import com.sparkers.zatappdriver.Retrofit.FCMClient;
 import com.sparkers.zatappdriver.Retrofit.RetrofitClient;
 
@@ -16,7 +16,7 @@ public class Common {
     public static final String user_rider_tbl="RidersInformation";
     public static final String pickup_request_tbl="PickupRequest";
     public static final String token_tbl="Tokens";
-    public static User currentUser;
+    public static Driver currentDriver;
     public static long userID;
     public static final int PICK_IMAGE_REQUEST = 9999;
     public static final String ZAT_API_HOST="http://zatapp.azurewebsites.net/api/";

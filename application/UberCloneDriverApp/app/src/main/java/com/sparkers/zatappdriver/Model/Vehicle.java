@@ -1,10 +1,14 @@
 package com.sparkers.zatappdriver.Model;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class Vehicle {
     private int id;
     private boolean isAc;
     private String registrationNumber, model, color, vehicleType;
     private short engine;
+    private Driver driver;
 
     public Vehicle(int id, boolean isAc, String registrationNumber, String model, String color, String vehicleType, short engine) {
         this.id = id;
@@ -14,6 +18,28 @@ public class Vehicle {
         this.color = color;
         this.vehicleType = vehicleType;
         this.engine = engine;
+    }
+    public Vehicle(JSONObject response){
+        try {
+            driver=new Driver(response.getJSONObject("Driver"));
+            engine=(short)response.getInt("EngineCC");
+            registrationNumber=response.getJSONObject("RegisterationNumber").getString("FormattedNumber");
+            model=response.getString("Model");
+            color="#"+Integer.toHexString(response.getInt("VehicleColor"));
+            isAc=response.getBoolean("IsAc");
+            vehicleType=response.getJSONObject("Type").getString("Name");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Driver getDriver() {
+        return driver;
+    }
+
+    public void setDriver(Driver driver) {
+        this.driver = driver;
     }
 
     public int getId() {

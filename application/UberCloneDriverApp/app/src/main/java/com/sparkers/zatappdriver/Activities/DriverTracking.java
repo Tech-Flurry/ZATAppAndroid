@@ -49,12 +49,12 @@ import com.sparkers.zatappdriver.Helpers.DirectionJSONParser;
 import com.sparkers.zatappdriver.Interfaces.IFCMService;
 import com.sparkers.zatappdriver.Interfaces.googleAPIInterface;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
+import com.sparkers.zatappdriver.Model.Driver;
 import com.sparkers.zatappdriver.Model.FCMResponse;
 import com.sparkers.zatappdriver.Model.History;
 import com.sparkers.zatappdriver.Model.Notification;
 import com.sparkers.zatappdriver.Model.Sender;
 import com.sparkers.zatappdriver.Model.Token;
-import com.sparkers.zatappdriver.Model.User;
 import com.sparkers.zatappdriver.R;
 import com.sparkers.zatappdriver.Util.Location;
 
@@ -97,7 +97,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
     DatabaseReference historyDriver, historyRider, riderInformation, drivers, tokens;
     FirebaseDatabase database;
 
-    User riderData;
+    Driver riderData;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,7 +114,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         historyRider = database.getReference(Common.history_rider).child(riderID);
         riderInformation=database.getReference(Common.user_rider_tbl);
         tokens=database.getReference(Common.token_tbl);
-        drivers= FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getVehicle().getRegistrationNumber());
+        drivers= FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentDriver.getVehicle().getRegistrationNumber());
         geoFire=new GeoFire(drivers);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -153,7 +153,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         riderInformation.child(riderID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                riderData=dataSnapshot.getValue(User.class);
+                riderData=dataSnapshot.getValue(Driver.class);
             }
 
             @Override
@@ -212,7 +212,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                                 historyDriver.push().setValue(driverHistory);
 
                                 History riderHistory = new History();
-                                riderHistory.setName(Common.currentUser.getName());
+                                riderHistory.setName(Common.currentDriver.getName());
                                 riderHistory.setStartAddress(legsObject.getString("start_address"));
                                 riderHistory.setEndAddress(legsObject.getString("end_address"));
                                 riderHistory.setTime(String.valueOf(timeValue));
@@ -264,7 +264,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                 .strokeWidth(5f));
 
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
-        geoFire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getVehicle().getRegistrationNumber()));
+        geoFire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentDriver.getVehicle().getRegistrationNumber()));
         GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(riderLat, riderLng), 0.05f);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
@@ -298,7 +298,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
 
     private void sendArrivedNotification(String customerId) {
         Token token = new Token(customerId);
-        Notification notification = new Notification( "Arrived",String.format("The driver %s has arrived at your location", Common.currentUser.getName()));
+        Notification notification = new Notification( "Arrived",String.format("The driver %s has arrived at your location", Common.currentDriver.getName()));
         Sender sender = new Sender(token.getToken(), notification);
 
         mFCMService.sendMessage(sender).enqueue(new Callback<FCMResponse>() {

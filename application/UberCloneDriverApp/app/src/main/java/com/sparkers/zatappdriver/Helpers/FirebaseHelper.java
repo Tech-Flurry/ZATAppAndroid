@@ -27,7 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sparkers.zatappdriver.Activities.DriverHome;
 import com.sparkers.zatappdriver.Common.Common;
-import com.sparkers.zatappdriver.Model.User;
+import com.sparkers.zatappdriver.Model.Driver;
 import com.sparkers.zatappdriver.R;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
@@ -148,15 +148,15 @@ public class FirebaseHelper {
                         .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                             @Override
                             public void onSuccess(AuthResult authResult) {
-                                User user=new User();
+                                Driver driver =new Driver();
                                 //user.setEmail(etEmail.getText().toString());
-                                user.setName(etName.getText().toString());
+                                driver.setName(etName.getText().toString());
                                 //user.setPassword(etPassword.getText().toString());
-                                user.setPhone(etPhone.getText().toString());
+                                driver.setPhone(etPhone.getText().toString());
                                 //user.setVehicle("UberX");
 
                                 users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                        .setValue(user)
+                                        .setValue(driver)
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
@@ -186,7 +186,7 @@ public class FirebaseHelper {
         });
         alertDialog.show();
     }
-    public void showRegisterPhone(final User user, final GoogleSignInAccount account){
+    public void showRegisterPhone(final Driver driver, final GoogleSignInAccount account){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
         alertDialog.setTitle(activity.getResources().getString(R.string.signin));
         alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
@@ -201,12 +201,12 @@ public class FirebaseHelper {
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
                 //user.setEmail(account.getEmail());
-                user.setName(account.getDisplayName());
+                driver.setName(account.getDisplayName());
                 //user.setPassword(null);
-                user.setPhone(etPhone.getText().toString());
+                driver.setPhone(etPhone.getText().toString());
                 //user.setVehicle("UberX");
                 users.child(account.getId())
-                        .setValue(user)
+                        .setValue(driver)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
@@ -230,7 +230,7 @@ public class FirebaseHelper {
         });
         alertDialog.show();
     }
-    public void showRegisterPhone(final User user, final String id, final String name, final String email){
+    public void showRegisterPhone(final Driver driver, final String id, final String name, final String email){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(activity);
         alertDialog.setTitle(activity.getResources().getString(R.string.signin));
         alertDialog.setMessage(activity.getResources().getString(R.string.fill_fields));
@@ -245,12 +245,12 @@ public class FirebaseHelper {
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
                 //user.setEmail(email);
-                user.setName(name);
+                driver.setName(name);
                 //user.setPassword(null);
-                user.setPhone(etPhone.getText().toString());
+                driver.setPhone(etPhone.getText().toString());
                 //user.setVehicle("UberX");
                 users.child(id)
-                        .setValue(user)
+                        .setValue(driver)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
@@ -283,13 +283,13 @@ public class FirebaseHelper {
         activity.finish();
     }
     public void registerByGoogleAccount(final GoogleSignInAccount account){
-        final User user=new User();
+        final Driver driver =new Driver();
         users.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User post = dataSnapshot.child(account.getId()).getValue(User.class);
+                Driver post = dataSnapshot.child(account.getId()).getValue(Driver.class);
 
-                if(post==null) showRegisterPhone(user, account);
+                if(post==null) showRegisterPhone(driver, account);
                 else loginSuccess();
             }
 
@@ -309,13 +309,13 @@ public class FirebaseHelper {
                         final String name=object.optString("name");
                         final String id=object.optString("id");
                         final String email=object.optString("email");
-                        final User user=new User();
+                        final Driver driver =new Driver();
                         users.addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                User post = dataSnapshot.child(id).getValue(User.class);
+                                Driver post = dataSnapshot.child(id).getValue(Driver.class);
 
-                                if(post==null) showRegisterPhone(user, id, name, email);
+                                if(post==null) showRegisterPhone(driver, id, name, email);
                                 else loginSuccess();
 
                             }

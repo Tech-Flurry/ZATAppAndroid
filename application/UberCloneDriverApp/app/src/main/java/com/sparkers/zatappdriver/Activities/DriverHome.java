@@ -96,7 +96,7 @@ import com.sparkers.zatappdriver.Helpers.PlacesAutoCompleteModel;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
-import com.sparkers.zatappdriver.Model.User;
+import com.sparkers.zatappdriver.Model.Driver;
 import com.sparkers.zatappdriver.Model.Vehicle;
 import com.sparkers.zatappdriver.R;
 import com.sparkers.zatappdriver.Util.Location;
@@ -348,19 +348,19 @@ public class DriverHome extends AppCompatActivity
         TextView tvStars= navigationHeaderView.findViewById(R.id.tvStars);
         CircleImageView imageAvatar= navigationHeaderView.findViewById(R.id.imageAvatar);
 
-        tvName.setText(Common.currentUser.getName());
-        if(Common.currentUser.getRating()!=null &&
-                !TextUtils.isEmpty(Common.currentUser.getRating()))
-            tvStars.setText(Common.currentUser.getRating());
+        tvName.setText(Common.currentDriver.getName());
+        if(Common.currentDriver.getRating()!=null &&
+                !TextUtils.isEmpty(Common.currentDriver.getRating()))
+            tvStars.setText(Common.currentDriver.getRating());
 
          /*if(isLoggedInFacebook)
             Picasso.get().load("https://graph.facebook.com/" + Common.userID + "/picture?width=500&height=500").into(imageAvatar);
         else if(account!=null)
             Picasso.get().load(account.getPhotoUrl()).into(imageAvatar);*/
 
-        if(Common.currentUser.getAvatarUrl()!=null &&
-                !TextUtils.isEmpty(Common.currentUser.getAvatarUrl()))
-        Picasso.get().load(Common.currentUser.getAvatarUrl()).into(imageAvatar);
+        if(Common.currentDriver.getAvatarUrl()!=null &&
+                !TextUtils.isEmpty(Common.currentDriver.getAvatarUrl()))
+        Picasso.get().load(Common.currentDriver.getAvatarUrl()).into(imageAvatar);
     }
 
     private void loadUser(){
@@ -368,14 +368,9 @@ public class DriverHome extends AppCompatActivity
         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try {
-                    Common.currentUser= new User(response.getJSONObject("FullName").getString("FirstName"),response.getJSONObject("ContactNumber").getString("PhoneNumberFormat"),null,response.getDouble("TotalRating"));
-                    getUserVehicle();
-                    initDrawer();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.e("loadUser",e.getMessage());
-                }
+                Common.currentDriver = new Driver(response);
+                getUserVehicle();
+                initDrawer();
 
             }
         }, new Response.ErrorListener() {
@@ -393,20 +388,8 @@ public class DriverHome extends AppCompatActivity
         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try {
-                    String color= "#"+Integer.toHexString(response.getInt("VehicleColor")); //the response sends the color in integer so here we have to convert it into usable hex-format
-                    Vehicle userVehicle= new Vehicle(response.getInt("VehicleId"),
-                            response.getBoolean("IsAC"),
-                            response.getJSONObject("RegisterationNumber").getString("FormattedNumber"),
-                            response.getString("Model"),
-                            color,
-                            response.getJSONObject("Type").getString("Name"),
-                            (short) response.getInt("EngineCC"));
-                    Common.currentUser.setVehicle(userVehicle);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.e("getVehicle",e.getMessage());
-                }
+                Vehicle vehicle=new Vehicle(response);
+                Common.currentDriver.setVehicle(vehicle);
 
             }
         }, new Response.ErrorListener() {
@@ -493,13 +476,13 @@ public class DriverHome extends AppCompatActivity
                                     else {
                                         carMarker = mMap.addMarker(new MarkerOptions().position(currentPosition).flat(true));
                                         carMarker.setAnchor(0.5f, 0.5f);
-                                        if (Common.currentUser.getVehicle().getVehicleType().equalsIgnoreCase("car")){
+                                        if (Common.currentDriver.getVehicle().getVehicleType().equalsIgnoreCase("car")){
                                             carMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.car));
                                         }
-                                        else if (Common.currentUser.getVehicle().getVehicleType().equalsIgnoreCase("bike")){
+                                        else if (Common.currentDriver.getVehicle().getVehicleType().equalsIgnoreCase("bike")){
                                             carMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.bike));
                                         }
-                                        else if (Common.currentUser.getVehicle().getVehicleType().equalsIgnoreCase("Auto-Rickshaw")){
+                                        else if (Common.currentDriver.getVehicle().getVehicleType().equalsIgnoreCase("Auto-Rickshaw")){
                                             carMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.rickshaw));
                                         }
                                     }
@@ -729,9 +712,9 @@ public class DriverHome extends AppCompatActivity
         final RadioButton rbUberX=carType.findViewById(R.id.rbUberX);
         final RadioButton rbUberBlack=carType.findViewById(R.id.rbUberBlack);
 
-        if(Common.currentUser.getVehicle().equals("UberX"))
+        if(Common.currentDriver.getVehicle().equals("UberX"))
             rbUberX.setChecked(true);
-        else if(Common.currentUser.getVehicle().equals("Uber Black"))
+        else if(Common.currentDriver.getVehicle().equals("Uber Black"))
             rbUberBlack.setChecked(true);
 
         alertDialog.setView(carType);
