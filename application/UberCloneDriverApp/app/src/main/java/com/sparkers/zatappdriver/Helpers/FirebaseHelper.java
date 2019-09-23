@@ -149,11 +149,11 @@ public class FirebaseHelper {
                             @Override
                             public void onSuccess(AuthResult authResult) {
                                 User user=new User();
-                                user.setEmail(etEmail.getText().toString());
+                                //user.setEmail(etEmail.getText().toString());
                                 user.setName(etName.getText().toString());
-                                user.setPassword(etPassword.getText().toString());
+                                //user.setPassword(etPassword.getText().toString());
                                 user.setPhone(etPhone.getText().toString());
-                                user.setCarType("UberX");
+                                //user.setVehicle("UberX");
 
                                 users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                         .setValue(user)
@@ -200,11 +200,11 @@ public class FirebaseHelper {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                user.setEmail(account.getEmail());
+                //user.setEmail(account.getEmail());
                 user.setName(account.getDisplayName());
-                user.setPassword(null);
+                //user.setPassword(null);
                 user.setPhone(etPhone.getText().toString());
-                user.setCarType("UberX");
+                //user.setVehicle("UberX");
                 users.child(account.getId())
                         .setValue(user)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -244,11 +244,11 @@ public class FirebaseHelper {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                user.setEmail(email);
+                //user.setEmail(email);
                 user.setName(name);
-                user.setPassword(null);
+                //user.setPassword(null);
                 user.setPhone(etPhone.getText().toString());
-                user.setCarType("UberX");
+                //user.setVehicle("UberX");
                 users.child(id)
                         .setValue(user)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {

@@ -10,10 +10,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.NavigationView;
 import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
@@ -31,10 +29,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -60,7 +56,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -88,7 +83,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.gson.JsonObject;
 import com.google.maps.android.SphericalUtil;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -103,6 +97,7 @@ import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
 import com.sparkers.zatappdriver.Model.User;
+import com.sparkers.zatappdriver.Model.Vehicle;
 import com.sparkers.zatappdriver.R;
 import com.sparkers.zatappdriver.Util.Location;
 import com.squareup.picasso.Picasso;
@@ -354,9 +349,9 @@ public class DriverHome extends AppCompatActivity
         CircleImageView imageAvatar= navigationHeaderView.findViewById(R.id.imageAvatar);
 
         tvName.setText(Common.currentUser.getName());
-        if(Common.currentUser.getRates()!=null &&
-                !TextUtils.isEmpty(Common.currentUser.getRates()))
-            tvStars.setText(Common.currentUser.getRates());
+        if(Common.currentUser.getRating()!=null &&
+                !TextUtils.isEmpty(Common.currentUser.getRating()))
+            tvStars.setText(Common.currentUser.getRating());
 
          /*if(isLoggedInFacebook)
             Picasso.get().load("https://graph.facebook.com/" + Common.userID + "/picture?width=500&height=500").into(imageAvatar);
@@ -374,11 +369,43 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    Common.currentUser= new User(response.getJSONObject("FullName").getString("FirstName"),response.getJSONObject("ContactNumber").getString("PhoneNumberFormat"),response.getDouble("TotalRating"));
+                    Common.currentUser= new User(response.getJSONObject("FullName").getString("FirstName"),response.getJSONObject("ContactNumber").getString("PhoneNumberFormat"),null,response.getDouble("TotalRating"));
+                    getUserVehicle();
                     initDrawer();
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Log.e("loadUser",e.getMessage());
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+                Log.e("loadUser",error.getMessage());
+            }
+        });
+        queue.add(request);
+    }
+
+    private void getUserVehicle() {
+        String requestUrl=Common.ZAT_API_HOST+"drivers/"+Common.userID+"/GetVehicle";
+        JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    String color= "#"+Integer.toHexString(response.getInt("VehicleColor")); //the response sends the color in integer so here we have to convert it into usable hex-format
+                    Vehicle userVehicle= new Vehicle(response.getInt("VehicleId"),
+                            response.getBoolean("IsAC"),
+                            response.getJSONObject("RegisterationNumber").getString("FormattedNumber"),
+                            response.getString("Model"),
+                            color,
+                            response.getJSONObject("Type").getString("Name"),
+                            (short) response.getInt("EngineCC"));
+                    Common.currentUser.setVehicle(userVehicle);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.e("getVehicle",e.getMessage());
                 }
 
             }
@@ -464,9 +491,17 @@ public class DriverHome extends AppCompatActivity
                                         carMarker.setPosition(currentPosition);
                                     }
                                     else {
-                                        carMarker = mMap.addMarker(new MarkerOptions().position(currentPosition).flat(true)
-                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+                                        carMarker = mMap.addMarker(new MarkerOptions().position(currentPosition).flat(true));
                                         carMarker.setAnchor(0.5f, 0.5f);
+                                        if (Common.currentUser.getVehicle().getVehicleType().equalsIgnoreCase("car")){
+                                            carMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.car));
+                                        }
+                                        else if (Common.currentUser.getVehicle().getVehicleType().equalsIgnoreCase("bike")){
+                                            carMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.bike));
+                                        }
+                                        else if (Common.currentUser.getVehicle().getVehicleType().equalsIgnoreCase("Auto-Rickshaw")){
+                                            carMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.rickshaw));
+                                        }
                                     }
                                         carMarker.setRotation(getBearing(oldPosition, newPosition));
                                     float zoom=mMap.getCameraPosition().zoom;
@@ -694,9 +729,9 @@ public class DriverHome extends AppCompatActivity
         final RadioButton rbUberX=carType.findViewById(R.id.rbUberX);
         final RadioButton rbUberBlack=carType.findViewById(R.id.rbUberBlack);
 
-        if(Common.currentUser.getCarType().equals("UberX"))
+        if(Common.currentUser.getVehicle().equals("UberX"))
             rbUberX.setChecked(true);
-        else if(Common.currentUser.getCarType().equals("Uber Black"))
+        else if(Common.currentUser.getVehicle().equals("Uber Black"))
             rbUberBlack.setChecked(true);
 
         alertDialog.setView(carType);

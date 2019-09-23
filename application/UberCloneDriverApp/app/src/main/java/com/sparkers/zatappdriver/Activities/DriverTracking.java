@@ -114,7 +114,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
         historyRider = database.getReference(Common.history_rider).child(riderID);
         riderInformation=database.getReference(Common.user_rider_tbl);
         tokens=database.getReference(Common.token_tbl);
-        drivers= FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getCarType());
+        drivers= FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getVehicle().getRegistrationNumber());
         geoFire=new GeoFire(drivers);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -264,7 +264,7 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                 .strokeWidth(5f));
 
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.uber_style_map));
-        geoFire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getCarType()));
+        geoFire = new GeoFire(FirebaseDatabase.getInstance().getReference(Common.driver_tbl).child(Common.currentUser.getVehicle().getRegistrationNumber()));
         GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(riderLat, riderLng), 0.05f);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override

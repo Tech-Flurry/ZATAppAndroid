@@ -1,59 +1,61 @@
 package com.sparkers.zatappdriver.Model;
 
 public class User{
-    private String email, name, password, phone, avatarUrl, rates, carType;
+    private String name;
+    private String phone;
+    private String avatarUrl;
+    private String rating;
+    private Vehicle vehicle;
 
     public User(){
 
     }
 
-    public User(String name, String phone, double rates) {
+    public User(String name, String phone, double rating) {
         this.name = name;
         this.phone = phone;
-        this.rates=rates+"";
+        this.rating = rating +"";
 
     }
 
-    public User(String email, String name, String password, String phone, String avatarUrl, String rates, String carType) {
-        this.email = email;
+    public User(String name, String phone, String avatarUrl, double rating) {
         this.name = name;
-        this.password = password;
         this.phone = phone;
         this.avatarUrl = avatarUrl;
-        this.rates = rates;
-        this.carType = carType;
+        this.rating = rating+"";
     }
 
-    public String getCarType() {
-        return carType;
+
+    public User(String name, String phone, String avatarUrl, double rating, Vehicle vehicle) {
+        this.name = name;
+        this.phone = phone;
+        this.avatarUrl = avatarUrl;
+        this.rating = rating+"";
+        this.vehicle = vehicle;
     }
 
-    public void setCarType(String carType) {
-        this.carType = carType;
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
     public String getAvatarUrl() {
         return avatarUrl;
     }
 
-    public String getRates() {
-        return rates;
+    public String getRating() {
+        return rating;
     }
 
-    public void setRates(String rates) {
-        this.rates = rates;
+    public void setRating(String rating) {
+        this.rating = rating;
     }
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getName() {
@@ -62,14 +64,6 @@ public class User{
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getPhone() {
