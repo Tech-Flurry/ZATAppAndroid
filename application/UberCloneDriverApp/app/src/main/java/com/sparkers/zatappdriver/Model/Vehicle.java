@@ -26,8 +26,9 @@ public class Vehicle {
             registrationNumber=response.getJSONObject("RegisterationNumber").getString("FormattedNumber");
             model=response.getString("Model");
             color="#"+Integer.toHexString(response.getInt("VehicleColor"));
-            isAc=response.getBoolean("IsAc");
+            isAc=response.getBoolean("IsAC");
             vehicleType=response.getJSONObject("Type").getString("Name");
+            id=response.getInt("VehicleId");
 
         } catch (JSONException e) {
             e.printStackTrace();

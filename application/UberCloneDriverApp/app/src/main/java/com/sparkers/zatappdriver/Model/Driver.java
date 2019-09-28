@@ -24,7 +24,7 @@ public class Driver {
             cnicNumber=response.getString("CNIC_Number");
             fullName=response.getJSONObject("FullName").getString("FirstName")+" "+response.getJSONObject("FullName").getString("LastName");
             phone=response.getJSONObject("ContactNumber").getString("PhoneNumberFormat");
-            avatarUrl=response.getString("Picture");
+            //avatarUrl=response.getString("Picture");
             rating=response.getDouble("TotalRating")+"";
             id=response.getLong("UserId");
             creditLimit=response.getDouble("CreditLimit");

@@ -377,7 +377,7 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
-                Log.e("loadUser",error.getMessage());
+                 Log.e("loadUser",error.getMessage());
             }
         });
         queue.add(request);
