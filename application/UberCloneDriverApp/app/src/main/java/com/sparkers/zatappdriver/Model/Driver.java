@@ -9,7 +9,7 @@ public class Driver {
     private String name, cnicNumber, fullName;
     private String phone;
     private String avatarUrl;
-    private String rating;
+    private float rating;
     private Vehicle vehicle;
     private double creditLimit, balance;
     private boolean isBooked, isCleared, isBlocked, isActive;
@@ -25,7 +25,7 @@ public class Driver {
             fullName=response.getJSONObject("FullName").getString("FirstName")+" "+response.getJSONObject("FullName").getString("LastName");
             phone=response.getJSONObject("ContactNumber").getString("PhoneNumberFormat");
             //avatarUrl=response.getString("Picture");
-            rating=response.getDouble("TotalRating")+"";
+            rating=Float.parseFloat(response.getDouble("TotalRating")+"");
             id=response.getLong("UserId");
             creditLimit=response.getDouble("CreditLimit");
             balance=response.getDouble("Balance");
@@ -39,26 +39,26 @@ public class Driver {
             e.printStackTrace();
         }
     }
-    public Driver(String name, String phone, double rating) {
+    public Driver(String name, String phone, float rating) {
         this.name = name;
         this.phone = phone;
-        this.rating = rating +"";
+        this.rating = rating;
 
     }
 
-    public Driver(String name, String phone, String avatarUrl, double rating) {
+    public Driver(String name, String phone, String avatarUrl, float rating) {
         this.name = name;
         this.phone = phone;
         this.avatarUrl = avatarUrl;
-        this.rating = rating+"";
+        this.rating = rating;
     }
 
 
-    public Driver(String name, String phone, String avatarUrl, double rating, Vehicle vehicle) {
+    public Driver(String name, String phone, String avatarUrl, float rating, Vehicle vehicle) {
         this.name = name;
         this.phone = phone;
         this.avatarUrl = avatarUrl;
-        this.rating = rating+"";
+        this.rating = rating;
         this.vehicle = vehicle;
     }
 
@@ -146,11 +146,11 @@ public class Driver {
         return avatarUrl;
     }
 
-    public String getRating() {
+    public float getRating() {
         return rating;
     }
 
-    public void setRating(String rating) {
+    public void setRating(float rating) {
         this.rating = rating;
     }
 

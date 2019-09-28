@@ -38,6 +38,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +47,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.firebase.geofire.GeoFire;
 import com.google.android.gms.auth.api.Auth;
@@ -345,13 +347,13 @@ public class DriverHome extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         View navigationHeaderView=navigationView.getHeaderView(0);
         TextView tvName= navigationHeaderView.findViewById(R.id.tvDriverName);
-        TextView tvStars= navigationHeaderView.findViewById(R.id.tvStars);
+        RatingBar ratingStars= navigationHeaderView.findViewById(R.id.ratingStars);
         CircleImageView imageAvatar= navigationHeaderView.findViewById(R.id.imageAvatar);
 
         tvName.setText(Common.currentDriver.getName());
-        if(Common.currentDriver.getRating()!=null &&
-                !TextUtils.isEmpty(Common.currentDriver.getRating()))
-            tvStars.setText(Common.currentDriver.getRating());
+        if(Common.currentDriver.getRating()!=0.0f &&
+                !TextUtils.isEmpty(Common.currentDriver.getRating()+""))
+            ratingStars.setRating(Common.currentDriver.getRating());
 
          /*if(isLoggedInFacebook)
             Picasso.get().load("https://graph.facebook.com/" + Common.userID + "/picture?width=500&height=500").into(imageAvatar);
