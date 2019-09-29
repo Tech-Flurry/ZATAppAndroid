@@ -411,8 +411,9 @@ public class DriverHome extends AppCompatActivity
         TextView tvName= navigationHeaderView.findViewById(R.id.tvDriverName);
         RatingBar ratingStars= navigationHeaderView.findViewById(R.id.ratingStars);
         CircleImageView imageAvatar= navigationHeaderView.findViewById(R.id.imageAvatar);
-
+        TextView txtBalance=navigationHeaderView.findViewById(R.id.txtBalance);
         tvName.setText(Common.currentDriver.getName());
+        txtBalance.setText(Double.toString(Common.currentDriver.getBalance()));
         if(Common.currentDriver.getRating()!=0.0f &&
                 !TextUtils.isEmpty(Common.currentDriver.getRating()+""))
             ratingStars.setRating(Common.currentDriver.getRating());
