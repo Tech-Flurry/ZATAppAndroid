@@ -157,6 +157,7 @@
                 android:layout_marginEnd="8dp"
                 android:drawableTop="@drawable/ic_directions_car_grey_24dp"
                 android:text="TextView"
+                android:textSize="10sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -168,6 +169,7 @@
                 android:layout_marginTop="8dp"
                 android:drawableTop="@drawable/ic_timer_grey_24dp"
                 android:text="TextView"
+                android:textSize="10sp"
                 app:layout_constraintEnd_toEndOf="@+id/txtDistance"
                 app:layout_constraintStart_toStartOf="@+id/txtDistance"
                 app:layout_constraintTop_toBottomOf="@+id/txtDistance" />
