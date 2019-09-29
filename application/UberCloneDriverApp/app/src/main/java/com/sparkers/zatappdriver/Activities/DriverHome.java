@@ -2,6 +2,7 @@ package com.sparkers.zatappdriver.Activities;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -18,6 +19,7 @@ import android.support.design.widget.NavigationView;
 import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -158,8 +160,11 @@ public class DriverHome extends AppCompatActivity
     private ImageButton btnMyLocation;
     private CardView cardInfo;
     private CardView cardDestinationInfo;
+    private CardView cardRiderInfo;
     private TextView txtDistance;
     private TextView txtDuration;
+    private TextView txtRiderName;
+    private ImageButton btnCallRider;
     private Button btnEndRide;
     private NotificationManager notificationManager;
     StorageReference storageReference;
@@ -188,6 +193,27 @@ public class DriverHome extends AppCompatActivity
         setContentView(R.layout.activity_drawer_home);
         cardInfo=findViewById(R.id.cardInfo);
         cardDestinationInfo=findViewById(R.id.cardDestinationDetails);
+        cardRiderInfo=findViewById(R.id.cardViewRiderInfo);
+        txtRiderName=findViewById(R.id.txtRiderName);
+        btnCallRider=findViewById(R.id.btnCallRider);
+        btnCallRider.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //call the rider
+                String riderNumber=Common.currentRide.getRider().getPhone();
+                int permissionCheck = ContextCompat.checkSelfPermission(DriverHome.this, Manifest.permission.CALL_PHONE);
+
+                if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(
+                            DriverHome.this,
+                            new String[]{Manifest.permission.CALL_PHONE},
+                            123);
+                    startActivity(new Intent(Intent.ACTION_CALL).setData(Uri.parse("tel:"+riderNumber)));
+                } else {
+                    startActivity(new Intent(Intent.ACTION_CALL).setData(Uri.parse("tel:"+riderNumber)));
+                }
+            }
+        });
         notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         txtDistance=findViewById(R.id.txtDistance);
         txtDuration=findViewById(R.id.txtDuration);
@@ -199,19 +225,7 @@ public class DriverHome extends AppCompatActivity
                 JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Ride ride= new Ride(response);
-                        Common.currentRide=ride;
-                        destination=ride.getPickUpLocation();
-                        if(!rideFlag){
-                            NotificationCompat.Builder rideNotification= new NotificationCompat.Builder(getBaseContext())
-                                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                                    .setContentTitle("New Ride")
-                                    .setContentText("You have a new Ride to pick-up")
-                                    .setPriority(NotificationCompat.PRIORITY_HIGH);
-                            rideNotification.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-                            notificationManager.notify(101, rideNotification.build());
-                            rideFlag=true;
-                        }
+
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -220,6 +234,8 @@ public class DriverHome extends AppCompatActivity
                     }
                 });
                 queue.add(request);
+                cardRiderInfo.setVisibility(View.INVISIBLE);
+                Common.currentRide=null;
                 destination=null;
                 carMarker.remove();
                 carMarker=null;
@@ -273,7 +289,7 @@ public class DriverHome extends AppCompatActivity
             }
         });
         //Places Auto Complete
-        autoSearchPlaces=findViewById(R.id.autoSearchPlaces);
+        /*autoSearchPlaces=findViewById(R.id.autoSearchPlaces);
         autoSearchPlaces.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
@@ -320,7 +336,7 @@ public class DriverHome extends AppCompatActivity
                 destination= (LatLng)placeItem.getTag();
                 autoSearchPlaces.clearFocus();
             }
-        });
+        });*/
         //~Places Auto Complete
         btnMyLocation=findViewById(R.id.btnMyLocation);
         btnMyLocation.setOnClickListener(new View.OnClickListener() {
@@ -355,6 +371,8 @@ public class DriverHome extends AppCompatActivity
                     rideNotification.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
                     notificationManager.notify(101, rideNotification.build());
                     rideFlag=true;
+                    cardRiderInfo.setVisibility(View.VISIBLE);
+                    txtRiderName.setText(Common.currentRide.getRider().getFullName());
                 }
             }
         }, new Response.ErrorListener() {
