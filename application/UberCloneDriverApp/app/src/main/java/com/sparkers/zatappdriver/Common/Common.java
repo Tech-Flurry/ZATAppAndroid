@@ -5,6 +5,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.sparkers.zatappdriver.Interfaces.IFCMService;
 import com.sparkers.zatappdriver.Interfaces.googleAPIInterface;
 import com.sparkers.zatappdriver.Model.Driver;
+import com.sparkers.zatappdriver.Model.Ride;
 import com.sparkers.zatappdriver.Retrofit.FCMClient;
 import com.sparkers.zatappdriver.Retrofit.RetrofitClient;
 
@@ -23,7 +24,7 @@ public class Common {
     public static final LatLngBounds APPLICATION_SERVICE_BOUNDS;
     public static Double currentLat;
     public static Double currentLng;
-
+    public static Ride currentRide;
     public static final String baseURL="https://maps.googleapis.com";
     public static final String fcmURL="https://fcm.googleapis.com/";
     static{

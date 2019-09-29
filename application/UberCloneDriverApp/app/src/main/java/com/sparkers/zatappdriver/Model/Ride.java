@@ -26,16 +26,16 @@ public class Ride {
             destination= new LatLng(response.getJSONObject("Destination").getDouble("Latitude"),
                     response.getJSONObject("Destination").getDouble("Longitude"));
             pickUpLocation=new LatLng(response.getJSONObject("PickUpLocation").getDouble("Latitude"),
-                    response.getJSONObject("Destination").getDouble("Longitude"));
+                    response.getJSONObject("PickUpLocation").getDouble("Longitude"));
             dropOffLocation=new LatLng(response.getJSONObject("DropOffLocation").getDouble("Latitude"),
-                    response.getJSONObject("Destination").getDouble("Longitude"));
+                    response.getJSONObject("DropOffLocation").getDouble("Longitude"));
             isEnded=response.getBoolean("IsEnded");
             isCanceled=response.getBoolean("IsCanceled");
             promo= new Promo(response.getJSONObject("ActivePromo"));
             route= new Route(response.getJSONObject("Route"));
-            bookingTime=new Date(response.getString("BookingTime"));
-            pickUpTime=new Date(response.getString("PickUpTime"));
-            dropOffTime= new Date(response.getString("DropOffTime"));
+            //bookingTime=new Date(response.getString("BookingTime"));
+            //pickUpTime=new Date(response.getString("PickUpTime"));
+            //dropOffTime= new Date(response.getString("DropOffTime"));
         } catch (JSONException e) {
             e.printStackTrace();
         }

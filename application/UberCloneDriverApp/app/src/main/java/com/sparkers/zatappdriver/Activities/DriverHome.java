@@ -2,11 +2,13 @@ package com.sparkers.zatappdriver.Activities;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,6 +17,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -47,7 +50,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.firebase.geofire.GeoFire;
 import com.google.android.gms.auth.api.Auth;
@@ -99,6 +101,8 @@ import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
 import com.sparkers.zatappdriver.Model.Driver;
+import com.sparkers.zatappdriver.Model.Notification;
+import com.sparkers.zatappdriver.Model.Ride;
 import com.sparkers.zatappdriver.Model.Vehicle;
 import com.sparkers.zatappdriver.R;
 import com.sparkers.zatappdriver.Util.Location;
@@ -129,6 +133,8 @@ public class DriverHome extends AppCompatActivity
     boolean markerFlag=false; //use to set zoom and position of the location marker
     boolean cardClickFlag=false;
     private GoogleApiClient mGoogleApiClient;
+    private boolean rideFlag=false;
+    private boolean pickUpFlag=false;
 
     private static final int REQUEST_CODE_PERMISSION=100;
     private static final int PLAY_SERVICES_REQUEST_CODE=2001;
@@ -155,6 +161,7 @@ public class DriverHome extends AppCompatActivity
     private TextView txtDistance;
     private TextView txtDuration;
     private Button btnEndRide;
+    private NotificationManager notificationManager;
     StorageReference storageReference;
 
 
@@ -181,12 +188,38 @@ public class DriverHome extends AppCompatActivity
         setContentView(R.layout.activity_drawer_home);
         cardInfo=findViewById(R.id.cardInfo);
         cardDestinationInfo=findViewById(R.id.cardDestinationDetails);
+        notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         txtDistance=findViewById(R.id.txtDistance);
         txtDuration=findViewById(R.id.txtDuration);
         btnEndRide=findViewById(R.id.btnEndRide);
         btnEndRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String requestUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/GetActiveRide";
+                JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Ride ride= new Ride(response);
+                        Common.currentRide=ride;
+                        destination=ride.getPickUpLocation();
+                        if(!rideFlag){
+                            NotificationCompat.Builder rideNotification= new NotificationCompat.Builder(getBaseContext())
+                                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                                    .setContentTitle("New Ride")
+                                    .setContentText("You have a new Ride to pick-up")
+                                    .setPriority(NotificationCompat.PRIORITY_HIGH);
+                            rideNotification.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                            notificationManager.notify(101, rideNotification.build());
+                            rideFlag=true;
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //Log.e("ActiveRide",error.getMessage());
+                    }
+                });
+                queue.add(request);
                 destination=null;
                 carMarker.remove();
                 carMarker=null;
@@ -206,6 +239,7 @@ public class DriverHome extends AppCompatActivity
                 Common.currentLat=response.getLastLocation().getLatitude();
                 Common.currentLng=response.getLastLocation().getLongitude();
                 updateLocation();
+                getActiveRide();
                 setActiveStatus(true);
                 if (destination!=null){
 
@@ -248,7 +282,7 @@ public class DriverHome extends AppCompatActivity
                     final AutoCompleteTextView autoCompleteTextView= (AutoCompleteTextView)view;
                     String query= autoCompleteTextView.getText().toString();
                     final ArrayList<PlacesAutoCompleteModel> lstPlaces= new ArrayList<>();
-                        String placesUrl="https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+query+"&inputtype=textquery&fields=formatted_address,name,geometry/location&key="+getString(R.string.google_maps_key)+"&locationbias=rectangle:"+Common.APPLICATION_SERVICE_BOUNDS.southwest.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude+"|"+Common.APPLICATION_SERVICE_BOUNDS.northeast.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude;
+                        String placesUrl="https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+query+"&inputtype=textquery&fields=formatted_address,name,geometry/location&key="+getString(R.string.google_maps_key)+"&locationbias=rectangle:"+Common.APPLICATION_SERVICE_BOUNDS.southwest.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude+"|"+Common.APPLICATION_SERVICE_BOUNDS.northeast.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.northeast.longitude;
                         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, placesUrl, "", new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
@@ -304,6 +338,34 @@ public class DriverHome extends AppCompatActivity
         setUpLocation();
     }
 
+    private void getActiveRide() {
+        String requestUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/GetActiveRide";
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Ride ride= new Ride(response);
+                Common.currentRide=ride;
+                destination=ride.getDestination();
+                if(!rideFlag){
+                    NotificationCompat.Builder rideNotification= new NotificationCompat.Builder(getBaseContext())
+                            .setSmallIcon(R.drawable.ic_location)
+                            .setContentTitle("New Ride")
+                            .setContentText("You have a new Ride to pick-up")
+                            .setPriority(NotificationCompat.PRIORITY_HIGH);
+                    rideNotification.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+                    notificationManager.notify(101, rideNotification.build());
+                    rideFlag=true;
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //Log.e("ActiveRide",error.getMessage());
+            }
+        });
+        queue.add(request);
+    }
+
     private void updateLocation() {
         String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/UpdateLocation?Latitude="+Common.currentLat+"&Longitude="+Common.currentLng;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
@@ -314,7 +376,7 @@ public class DriverHome extends AppCompatActivity
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("LocationUpdate",error.getMessage());
+                //Log.e("LocationUpdate",error.getMessage());
             }
         });
         queue.add(request);
@@ -330,7 +392,7 @@ public class DriverHome extends AppCompatActivity
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("ActiveStatus",error.getMessage());
+                //Log.e("ActiveStatus",error.getMessage());
             }
         });
         queue.add(request);
@@ -379,7 +441,7 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
-                 Log.e("loadUser",error.getMessage());
+                 //Log.e("loadUser",error.getMessage());
             }
         });
         queue.add(request);
@@ -453,9 +515,15 @@ public class DriverHome extends AppCompatActivity
                             blanckPolylineOptions.endCap(new SquareCap());
                             blanckPolylineOptions.jointType(JointType.ROUND);
                             blackPolyline = mMap.addPolyline(blanckPolylineOptions);
+                            if(pickUpFlag){
+                                mMap.addMarker(new MarkerOptions().position(polyLineList.get(polyLineList.size() - 1))
+                                        .title("Destination"));
+                            }
+                            else{
+                                mMap.addMarker(new MarkerOptions().position(polyLineList.get(polyLineList.size() - 1))
+                                        .title("Pickup location"));
+                            }
 
-                            mMap.addMarker(new MarkerOptions().position(polyLineList.get(polyLineList.size() - 1))
-                                    .title("Pickup location"));
 
                             final ValueAnimator polylineAnimator = ValueAnimator.ofInt(0, 100);
                             polylineAnimator.setDuration(2000);
