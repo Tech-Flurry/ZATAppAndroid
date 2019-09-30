@@ -93,6 +93,7 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.sparkers.zatappdriver.Common.Common;
+import com.sparkers.zatappdriver.Helpers.LoadingDialog;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
@@ -161,6 +162,7 @@ public class DriverHome extends AppCompatActivity
     private ImageButton btnCallRider;
     private Button btnEndRide;
     private NotificationManager notificationManager;
+    private LoadingDialog loadingDialog;
     StorageReference storageReference;
 
 
@@ -185,6 +187,7 @@ public class DriverHome extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawer_home);
+        loadingDialog= new LoadingDialog(DriverHome.this);
         cardDestinationInfo=findViewById(R.id.cardDestinationDetails);
         cardRiderInfo=findViewById(R.id.cardViewRiderInfo);
         cardRideButtons=findViewById(R.id.cardRideButtons);
@@ -478,6 +481,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void loadUser(){
+        loadingDialog.show();
         String requestUrl=Common.ZAT_API_HOST+"drivers/"+Common.userID;
         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONObject>() {
             @Override
@@ -485,6 +489,7 @@ public class DriverHome extends AppCompatActivity
                 Common.currentDriver = new Driver(response);
                 getUserVehicle();
                 initDrawer();
+                loadingDialog.dismiss();
 
             }
         }, new Response.ErrorListener() {
