@@ -95,10 +95,12 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.sparkers.zatappdriver.Common.Common;
 import com.sparkers.zatappdriver.Helpers.LoadingDialog;
+import com.sparkers.zatappdriver.Helpers.PaymentDetailsDialog;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
 import com.sparkers.zatappdriver.Model.Driver;
+import com.sparkers.zatappdriver.Model.PaymentDetails;
 import com.sparkers.zatappdriver.Model.Ride;
 import com.sparkers.zatappdriver.Model.Vehicle;
 import com.sparkers.zatappdriver.R;
@@ -258,6 +260,7 @@ public class DriverHome extends AppCompatActivity
                             TransitionManager.beginDelayedTransition(cardDestinationInfo);
                             cardDestinationInfo.setVisibility(View.INVISIBLE);
                             loadingDialog.dismiss();
+                            getPaymentDetails();
                         }
                     }, new Response.ErrorListener() {
                         @Override
@@ -295,10 +298,11 @@ public class DriverHome extends AppCompatActivity
                     if (greyPolyline!=null)
                         greyPolyline.remove();
                     getDirection();
-                }else{
+                }
+                else{
                     displayLocation();
                 }
-                if (Common.currentRide!=null){
+                if (Common.currentRide!=null && pickUpFlag){
                     updateRoute();
                 }
             }
@@ -327,56 +331,6 @@ public class DriverHome extends AppCompatActivity
                 }
             }
         });
-        //Places Auto Complete
-        /*autoSearchPlaces=findViewById(R.id.autoSearchPlaces);
-        autoSearchPlaces.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                boolean flag=false;
-                if (keyEvent.getAction()==KeyEvent.ACTION_UP){
-                    final AutoCompleteTextView autoCompleteTextView= (AutoCompleteTextView)view;
-                    String query= autoCompleteTextView.getText().toString();
-                    final ArrayList<PlacesAutoCompleteModel> lstPlaces= new ArrayList<>();
-                        String placesUrl="https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+query+"&inputtype=textquery&fields=formatted_address,name,geometry/location&key="+getString(R.string.google_maps_key)+"&locationbias=rectangle:"+Common.APPLICATION_SERVICE_BOUNDS.southwest.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.southwest.longitude+"|"+Common.APPLICATION_SERVICE_BOUNDS.northeast.latitude+","+Common.APPLICATION_SERVICE_BOUNDS.northeast.longitude;
-                        JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, placesUrl, "", new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                    JSONArray candidates=response.getJSONArray("candidates");
-                                    for (int i=0; i<candidates.length();i++){
-                                        JSONObject locationObject= candidates.getJSONObject(i).getJSONObject("geometry").getJSONObject("location");
-                                        LatLng location= new LatLng(locationObject.getDouble("lat"),locationObject.getDouble("lng"));
-                                        lstPlaces.add(new PlacesAutoCompleteModel(candidates.getJSONObject(i).getString("name").toUpperCase(),candidates.getJSONObject(i).getString("formatted_address"),location));
-                                    }
-                                    AutoCompleteAdapter adapter= new AutoCompleteAdapter(lstPlaces,DriverHome.this);
-                                    autoSearchPlaces.setAdapter(adapter);
-                                    autoSearchPlaces.showDropDown();
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        }, new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Message.messageError(DriverHome.this,Errors.WITHOUT_LOCATION);
-                            }
-                        });
-                        queue.add(request);
-                    flag=true;
-                }
-                return flag;
-            }
-        });
-        autoSearchPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                LinearLayout placeItem=(LinearLayout)view;
-                destination= (LatLng)placeItem.getTag();
-                autoSearchPlaces.clearFocus();
-            }
-        });*/
-        //~Places Auto Complete
         btnMyLocation=findViewById(R.id.btnMyLocation);
         btnMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -391,6 +345,27 @@ public class DriverHome extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         setUpLocation();
+    }
+
+    private void getPaymentDetails() {
+        //shows the payment details of the ended ride
+        String locationUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/GetPaymentSummary";
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                PaymentDetails paymentDetails= new PaymentDetails(response);
+                loadingDialog.dismiss();
+                PaymentDetailsDialog paymentDetailsDialog= new PaymentDetailsDialog(DriverHome.this,paymentDetails, Common.currentRide.getId());
+                paymentDetailsDialog.show();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //Log.e("Payment Details",error.getMessage());
+            }
+        });
+        queue.add(request);
+        loadingDialog.show();
     }
 
     private void updateRoute() {
@@ -448,9 +423,9 @@ public class DriverHome extends AppCompatActivity
 
     private void updateLocation() {
         String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/UpdateLocation?Latitude="+Common.currentLat+"&Longitude="+Common.currentLng;
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
+        StringRequest request = new StringRequest(Request.Method.GET, locationUrl, new Response.Listener<String>() {
             @Override
-            public void onResponse(JSONObject response) {
+            public void onResponse(String response) {
 
             }
         }, new Response.ErrorListener() {
