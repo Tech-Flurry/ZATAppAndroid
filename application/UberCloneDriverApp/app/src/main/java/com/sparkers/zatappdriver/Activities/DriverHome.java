@@ -2,7 +2,6 @@ package com.sparkers.zatappdriver.Activities;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -30,18 +29,15 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
-import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -97,13 +93,10 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.sparkers.zatappdriver.Common.Common;
-import com.sparkers.zatappdriver.Helpers.AutoCompleteAdapter;
-import com.sparkers.zatappdriver.Helpers.PlacesAutoCompleteModel;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
 import com.sparkers.zatappdriver.Model.Driver;
-import com.sparkers.zatappdriver.Model.Notification;
 import com.sparkers.zatappdriver.Model.Ride;
 import com.sparkers.zatappdriver.Model.Vehicle;
 import com.sparkers.zatappdriver.R;
@@ -158,9 +151,10 @@ public class DriverHome extends AppCompatActivity
     protected NavigationView navigationView;
     private AutoCompleteTextView autoSearchPlaces;
     private ImageButton btnMyLocation;
-    private CardView cardInfo;
     private CardView cardDestinationInfo;
     private CardView cardRiderInfo;
+    private CardView cardRideButtons;
+    private ImageButton btnTransfer, btnCancelRide, btnPickUp;
     private TextView txtDistance;
     private TextView txtDuration;
     private TextView txtRiderName;
@@ -191,9 +185,32 @@ public class DriverHome extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawer_home);
-        cardInfo=findViewById(R.id.cardInfo);
         cardDestinationInfo=findViewById(R.id.cardDestinationDetails);
         cardRiderInfo=findViewById(R.id.cardViewRiderInfo);
+        cardRideButtons=findViewById(R.id.cardRideButtons);
+        btnCancelRide =findViewById(R.id.btnCancelRide);
+        btnCancelRide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //code for Cancel Ride
+
+            }
+        });
+        btnTransfer=findViewById(R.id.btnTransferRide);
+        btnTransfer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //code to transfer ride
+            }
+        });
+        btnPickUp=findViewById(R.id.btnPickUp);
+        btnPickUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //code to pick-up ride
+
+            }
+        });
         txtRiderName=findViewById(R.id.txtRiderName);
         btnCallRider=findViewById(R.id.btnCallRider);
         btnCallRider.setOnClickListener(new View.OnClickListener() {
@@ -221,6 +238,7 @@ public class DriverHome extends AppCompatActivity
         btnEndRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //code to end ride
                 String requestUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/GetActiveRide";
                 JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
                     @Override
@@ -278,13 +296,20 @@ public class DriverHome extends AppCompatActivity
                 if (b){
                     location.initializeLocation();
                     btnMyLocation.setVisibility(View.VISIBLE);
-                }else{
-                    location.stopUpdateLocation();
-                    currentLocationMarker.remove();
-                    mMap.clear();
-                    setActiveStatus(false);
-                    btnMyLocation.setVisibility(View.INVISIBLE);
-                    cardDestinationInfo.setVisibility(View.INVISIBLE);
+                }
+                else{
+                    if (Common.currentRide==null){
+                        location.stopUpdateLocation();
+                        currentLocationMarker.remove();
+                        mMap.clear();
+                        setActiveStatus(false);
+                        btnMyLocation.setVisibility(View.INVISIBLE);
+                        cardDestinationInfo.setVisibility(View.INVISIBLE);
+                    }
+                    else{
+                        Toast.makeText(DriverHome.this, "You can't get Offline during a ride", Toast.LENGTH_SHORT).show();
+                        locationSwitch.setChecked(true);
+                    }
                 }
             }
         });
@@ -373,6 +398,12 @@ public class DriverHome extends AppCompatActivity
                     rideFlag=true;
                     cardRiderInfo.setVisibility(View.VISIBLE);
                     txtRiderName.setText(Common.currentRide.getRider().getFullName());
+                }
+                if (!pickUpFlag){
+                    cardRideButtons.setVisibility(View.VISIBLE);
+                }
+                else{
+                    cardRideButtons.setVisibility(View.INVISIBLE);
                 }
             }
         }, new Response.ErrorListener() {
