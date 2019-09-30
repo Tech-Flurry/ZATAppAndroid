@@ -48,6 +48,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.firebase.geofire.GeoFire;
 import com.google.android.gms.auth.api.Auth;
@@ -241,29 +242,36 @@ public class DriverHome extends AppCompatActivity
         btnEndRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //code to end ride
-                String requestUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/GetActiveRide";
-                JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
+                if (pickUpFlag){
+                    //code to end ride
+                    String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/EndRide?Latitude="+Common.currentLat+"&Longitude="+Common.currentLng;
+                    JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            cardRiderInfo.setVisibility(View.INVISIBLE);
+                            Common.currentRide=null;
+                            destination=null;
+                            carMarker.remove();
+                            carMarker=null;
+                            blackPolyline.remove();
+                            greyPolyline.remove();
+                            TransitionManager.beginDelayedTransition(cardDestinationInfo);
+                            cardDestinationInfo.setVisibility(View.INVISIBLE);
+                            loadingDialog.dismiss();
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            //Log.e("ActiveRide",error.getMessage());
+                        }
+                    });
+                    queue.add(request);
+                    loadingDialog.show();
+                }
+                else {
+                    Toast.makeText(DriverHome.this,"You cannot end a ride before pick-up",Toast.LENGTH_SHORT).show();
+                }
 
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        //Log.e("ActiveRide",error.getMessage());
-                    }
-                });
-                queue.add(request);
-                cardRiderInfo.setVisibility(View.INVISIBLE);
-                Common.currentRide=null;
-                destination=null;
-                carMarker.remove();
-                carMarker=null;
-                blackPolyline.remove();
-                greyPolyline.remove();
-                TransitionManager.beginDelayedTransition(cardDestinationInfo);
-                cardDestinationInfo.setVisibility(View.INVISIBLE);
             }
         });
         queue=Volley.newRequestQueue(DriverHome.this);
@@ -289,6 +297,9 @@ public class DriverHome extends AppCompatActivity
                     getDirection();
                 }else{
                     displayLocation();
+                }
+                if (Common.currentRide!=null){
+                    updateRoute();
                 }
             }
         });
@@ -380,6 +391,23 @@ public class DriverHome extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         setUpLocation();
+    }
+
+    private void updateRoute() {
+        //Updates the Route for ride
+        String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/AddRoute?Latitude="+Common.currentLat+"&Longitude="+Common.currentLng;
+        StringRequest request = new StringRequest(Request.Method.GET, requestUrl,new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //Toast.makeText(DriverHome.this, "Route Added", Toast.LENGTH_SHORT).show();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //Log.e("UpdateRoute",error.getMessage());
+            }
+        });
+        queue.add(request);
     }
 
     private void getActiveRide() {
