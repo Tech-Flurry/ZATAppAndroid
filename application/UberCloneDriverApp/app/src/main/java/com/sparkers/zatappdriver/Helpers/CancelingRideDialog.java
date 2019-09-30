@@ -8,11 +8,11 @@ import android.view.Window;
 
 import com.sparkers.zatappdriver.R;
 
-public class LoadingDialog extends Dialog implements View.OnClickListener {
-    public LoadingDialog(@NonNull Context context) {
+public class CancelingRideDialog extends Dialog implements View.OnClickListener {
+    public CancelingRideDialog(@NonNull Context context) {
         super(context);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.loading_dialog_layout);
+        setContentView(R.layout.canceling_ride_dialog_layout);
         setCancelable(false);
     }
 

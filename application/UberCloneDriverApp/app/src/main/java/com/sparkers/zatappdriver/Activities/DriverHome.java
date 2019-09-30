@@ -94,8 +94,10 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.sparkers.zatappdriver.Common.Common;
+import com.sparkers.zatappdriver.Helpers.CancelingRideDialog;
 import com.sparkers.zatappdriver.Helpers.LoadingDialog;
 import com.sparkers.zatappdriver.Helpers.PaymentDetailsDialog;
+import com.sparkers.zatappdriver.Helpers.TransferingRideDialog;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
 import com.sparkers.zatappdriver.Messages.Message;
@@ -166,6 +168,8 @@ public class DriverHome extends AppCompatActivity
     private Button btnEndRide;
     private NotificationManager notificationManager;
     private LoadingDialog loadingDialog;
+    private CancelingRideDialog cancelingRideDialog;
+    private TransferingRideDialog transferingRideDialog;
     StorageReference storageReference;
 
 
@@ -199,7 +203,22 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 //code for Cancel Ride
-
+                String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/CancelRide";
+                StringRequest request = new StringRequest(Request.Method.GET, requestUrl, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        endRide();
+                        cancelingRideDialog.dismiss();
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //Log.e("LocationUpdate",error.getMessage());
+                    }
+                });
+                queue.add(request);
+                cancelingRideDialog = new CancelingRideDialog(DriverHome.this);
+                cancelingRideDialog.show();
             }
         });
         btnTransfer=findViewById(R.id.btnTransferRide);
@@ -207,6 +226,29 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 //code to transfer ride
+                String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/TransferRide";
+                StringRequest request = new StringRequest(Request.Method.GET, requestUrl, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        boolean flag= Boolean.parseBoolean(response);
+                        if (flag){
+                            endRide();
+                            transferingRideDialog.dismiss();
+                        }
+                        else {
+                            transferingRideDialog.dismiss();
+                            Toast.makeText(DriverHome.this, "No other driver is available", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //Log.e("LocationUpdate",error.getMessage());
+                    }
+                });
+                queue.add(request);
+                transferingRideDialog= new TransferingRideDialog(DriverHome.this);
+                transferingRideDialog.show();
             }
         });
         btnPickUp=findViewById(R.id.btnPickUp);
@@ -214,6 +256,30 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 //code to pick-up ride
+                String requestUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/PickUpRide/"+Common.currentRide.getId();
+                JSONObject requestBody= new JSONObject();
+                try {
+                    requestBody.put("Latitude",Common.currentLat);
+                    requestBody.put("Longitude", Common.currentLng);
+                    JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, requestUrl, requestBody, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Common.currentRide= new Ride(response);
+                            pickUpFlag=true;
+                            cardRideButtons.setVisibility(View.INVISIBLE);
+                            loadingDialog.dismiss();
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+
+                        }
+                    });
+                    queue.add(request);
+                    loadingDialog.show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
             }
         });
@@ -250,17 +316,10 @@ public class DriverHome extends AppCompatActivity
                     JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            cardRiderInfo.setVisibility(View.INVISIBLE);
-                            Common.currentRide=null;
-                            destination=null;
-                            carMarker.remove();
-                            carMarker=null;
-                            blackPolyline.remove();
-                            greyPolyline.remove();
-                            TransitionManager.beginDelayedTransition(cardDestinationInfo);
-                            cardDestinationInfo.setVisibility(View.INVISIBLE);
+                            endRide();
                             loadingDialog.dismiss();
                             getPaymentDetails();
+
                         }
                     }, new Response.ErrorListener() {
                         @Override
@@ -300,6 +359,7 @@ public class DriverHome extends AppCompatActivity
                     getDirection();
                 }
                 else{
+                    mMap.clear();
                     displayLocation();
                 }
                 if (Common.currentRide!=null && pickUpFlag){
@@ -347,6 +407,22 @@ public class DriverHome extends AppCompatActivity
         setUpLocation();
     }
 
+    private void endRide() {
+        cardRideButtons.setVisibility(View.INVISIBLE);
+        cardRiderInfo.setVisibility(View.INVISIBLE);
+        Common.currentRide=null;
+        destination=null;
+        carMarker.remove();
+        carMarker=null;
+        blackPolyline.remove();
+        greyPolyline.remove();
+        TransitionManager.beginDelayedTransition(cardDestinationInfo);
+        cardDestinationInfo.setVisibility(View.INVISIBLE);
+        pickUpFlag=false;
+        rideFlag=false;
+        mMap.clear();
+    }
+
     private void getPaymentDetails() {
         //shows the payment details of the ended ride
         String locationUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/GetPaymentSummary";
@@ -354,7 +430,6 @@ public class DriverHome extends AppCompatActivity
             @Override
             public void onResponse(JSONObject response) {
                 PaymentDetails paymentDetails= new PaymentDetails(response);
-                loadingDialog.dismiss();
                 PaymentDetailsDialog paymentDetailsDialog= new PaymentDetailsDialog(DriverHome.this,paymentDetails, Common.currentRide.getId());
                 paymentDetailsDialog.show();
             }
@@ -365,7 +440,6 @@ public class DriverHome extends AppCompatActivity
             }
         });
         queue.add(request);
-        loadingDialog.show();
     }
 
     private void updateRoute() {
@@ -392,7 +466,13 @@ public class DriverHome extends AppCompatActivity
             public void onResponse(JSONObject response) {
                 Ride ride= new Ride(response);
                 Common.currentRide=ride;
-                destination=ride.getDestination();
+                if(pickUpFlag){
+                    destination=ride.getDestination();
+                }
+                else {
+                    destination=ride.getPickUpLocation();
+                }
+
                 if(!rideFlag){
                     NotificationCompat.Builder rideNotification= new NotificationCompat.Builder(getBaseContext())
                             .setSmallIcon(R.drawable.ic_location)
@@ -439,9 +519,9 @@ public class DriverHome extends AppCompatActivity
 
     private void setActiveStatus(boolean status) {
         String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/ChangeActiveStatus/"+status;
-        JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
+        StringRequest request= new StringRequest(Request.Method.GET, locationUrl, new Response.Listener<String>() {
             @Override
-            public void onResponse(JSONObject response) {
+            public void onResponse(String response) {
 
             }
         }, new Response.ErrorListener() {
@@ -596,9 +676,17 @@ public class DriverHome extends AppCompatActivity
 
                                     List<LatLng> p = points.subList(0, newPoints);
                                     LatLng oldPosition=polyLineList.get(0);
-                                    LatLng newPosition= polyLineList.get(1);
+                                    LatLng newPosition;
+                                    try{
+                                        newPosition= polyLineList.get(1);
+                                    }
+                                    catch (IndexOutOfBoundsException ex){
+                                        newPosition=polyLineList.get(0);
+                                    }
+
                                     blackPolyline.setPoints(p);
                                     if(carMarker!=null){
+                                        carMarker.setVisible(true);
                                         carMarker.setPosition(currentPosition);
                                     }
                                     else {
@@ -736,6 +824,7 @@ public class DriverHome extends AppCompatActivity
         mMap.setTrafficEnabled(true);
         mMap.setIndoorEnabled(true);
         mMap.setBuildingsEnabled(true);
+        mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.getUiSettings().setScrollGesturesEnabled(true);

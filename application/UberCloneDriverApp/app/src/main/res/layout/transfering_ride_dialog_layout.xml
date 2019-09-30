@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
-        android:text="@string/com_facebook_loading"
+        android:text="Transfering Ride..."
         android:textSize="30sp"
         app:layout_constraintBottom_toTopOf="@+id/textView5"
         app:layout_constraintEnd_toEndOf="@+id/progressBar2"
