@@ -319,6 +319,7 @@ public class DriverHome extends AppCompatActivity
                             loadingDialog.dismiss();
                             getPaymentDetails(response);
                             endRide();
+                            loadUser();
 
                         }
                     }, new Response.ErrorListener() {
