@@ -316,9 +316,9 @@ public class DriverHome extends AppCompatActivity
                     JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            endRide();
                             loadingDialog.dismiss();
-                            getPaymentDetails();
+                            getPaymentDetails(response);
+                            endRide();
 
                         }
                     }, new Response.ErrorListener() {
@@ -423,23 +423,11 @@ public class DriverHome extends AppCompatActivity
         mMap.clear();
     }
 
-    private void getPaymentDetails() {
+    private void getPaymentDetails(JSONObject response) {
         //shows the payment details of the ended ride
-        String locationUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/GetPaymentSummary";
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, locationUrl, "", new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                PaymentDetails paymentDetails= new PaymentDetails(response);
-                PaymentDetailsDialog paymentDetailsDialog= new PaymentDetailsDialog(DriverHome.this,paymentDetails, Common.currentRide.getId());
-                paymentDetailsDialog.show();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                //Log.e("Payment Details",error.getMessage());
-            }
-        });
-        queue.add(request);
+        PaymentDetails paymentDetails= new PaymentDetails(response);
+        PaymentDetailsDialog paymentDetailsDialog= new PaymentDetailsDialog(DriverHome.this,paymentDetails, Common.currentRide.getId());
+        paymentDetailsDialog.show();
     }
 
     private void updateRoute() {

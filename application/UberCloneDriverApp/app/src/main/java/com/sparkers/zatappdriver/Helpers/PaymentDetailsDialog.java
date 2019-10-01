@@ -19,7 +19,6 @@ import com.sparkers.zatappdriver.Model.PaymentDetails;
 import com.sparkers.zatappdriver.R;
 
 public class PaymentDetailsDialog extends Dialog implements View.OnClickListener {
-    LoadingDialog loadingDialog;
     public PaymentDetailsDialog(@NonNull final Context context, PaymentDetails paymentDetails, final long rideId) {
         super(context);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -29,22 +28,7 @@ public class PaymentDetailsDialog extends Dialog implements View.OnClickListener
         btnReceivePayment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RequestQueue queue= Volley.newRequestQueue(context);
-                String locationUrl= Common.ZAT_API_HOST+"Rides/"+rideId+"/Pay";
-                StringRequest request = new StringRequest(Request.Method.GET, locationUrl, new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        loadingDialog.dismiss();
-                        dismiss();
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                    }
-                });
-                queue.add(request);
-                loadingDialog= new LoadingDialog(context);
-                loadingDialog.show();
+                dismiss();
             }
         });
         TextView txtTotalFare = findViewById(R.id.txtTotalFare);
