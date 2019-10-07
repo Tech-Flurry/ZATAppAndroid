@@ -32,6 +32,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -174,6 +175,7 @@ public class DriverHome extends AppCompatActivity
 
 
     private float getBearing(LatLng startPosition, LatLng endPosition) {
+        //Method to get rotation angle for a marker
         double lat=Math.abs(startPosition.latitude-endPosition.latitude);
         double lng=Math.abs(startPosition.longitude-endPosition.longitude);
 
@@ -193,17 +195,18 @@ public class DriverHome extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //keeps the screen open
         setContentView(R.layout.activity_drawer_home);
-        loadingDialog= new LoadingDialog(DriverHome.this);
-        cardDestinationInfo=findViewById(R.id.cardDestinationDetails);
-        cardRiderInfo=findViewById(R.id.cardViewRiderInfo);
-        cardRideButtons=findViewById(R.id.cardRideButtons);
-        btnCancelRide =findViewById(R.id.btnCancelRide);
+        loadingDialog= new LoadingDialog(DriverHome.this); //initializing loading dialog to be show while the application is calling an API
+        cardDestinationInfo=findViewById(R.id.cardDestinationDetails); //card view which shows the destination information
+        cardRiderInfo=findViewById(R.id.cardViewRiderInfo); //card view which shows the rider information
+        cardRideButtons=findViewById(R.id.cardRideButtons); //card view which contains the buttons i.e. cancel, end and pickup ride
+        btnCancelRide =findViewById(R.id.btnCancelRide); //button on the card view to cancel a ride
         btnCancelRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //code for Cancel Ride
-                String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/CancelRide";
+                String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/CancelRide"; //requests the API to cancel ride
                 StringRequest request = new StringRequest(Request.Method.GET, requestUrl, new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -216,26 +219,29 @@ public class DriverHome extends AppCompatActivity
                         //Log.e("LocationUpdate",error.getMessage());
                     }
                 });
-                queue.add(request);
+                queue.add(request); //start request
+                //shows a waiting dialog
                 cancelingRideDialog = new CancelingRideDialog(DriverHome.this);
                 cancelingRideDialog.show();
             }
         });
-        btnTransfer=findViewById(R.id.btnTransferRide);
+        btnTransfer=findViewById(R.id.btnTransferRide); //button on the card to transfer the ride to another available driver
         btnTransfer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //code to transfer ride
-                String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/TransferRide";
+                String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/TransferRide"; //requests the API to transfer ride
                 StringRequest request = new StringRequest(Request.Method.GET, requestUrl, new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        boolean flag= Boolean.parseBoolean(response);
+                        boolean flag= Boolean.parseBoolean(response); //API response is : True->Ride transferred, False->No Driver Available
                         if (flag){
+                            //if true then end the ride from this driver
                             endRide();
-                            transferingRideDialog.dismiss();
+                            transferingRideDialog.dismiss(); //vanish the waiting dialog
                         }
                         else {
+                            //if the ride is not transferred then do nothing just remove the waiting dialog
                             transferingRideDialog.dismiss();
                             Toast.makeText(DriverHome.this, "No other driver is available", Toast.LENGTH_SHORT).show();
                         }
@@ -246,17 +252,19 @@ public class DriverHome extends AppCompatActivity
                         //Log.e("LocationUpdate",error.getMessage());
                     }
                 });
-                queue.add(request);
+                queue.add(request); //start request
+                //show a waiting dialog to transfer ride
                 transferingRideDialog= new TransferingRideDialog(DriverHome.this);
                 transferingRideDialog.show();
             }
         });
-        btnPickUp=findViewById(R.id.btnPickUp);
+        btnPickUp=findViewById(R.id.btnPickUp); //button on the card view to pickup the ride
         btnPickUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //code to pick-up ride
-                String requestUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/PickUpRide/"+Common.currentRide.getId();
+                String requestUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/PickUpRide/"+Common.currentRide.getId(); //requests the API to Pick Up the ride with ride Id
+                //this is a post request and need a JSON Object for pick-up location
                 JSONObject requestBody= new JSONObject();
                 try {
                     requestBody.put("Latitude",Common.currentLat);
@@ -264,10 +272,10 @@ public class DriverHome extends AppCompatActivity
                     JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, requestUrl, requestBody, new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            Common.currentRide= new Ride(response);
-                            pickUpFlag=true;
-                            cardRideButtons.setVisibility(View.INVISIBLE);
-                            loadingDialog.dismiss();
+                            Common.currentRide= new Ride(response); //updates the ride info
+                            pickUpFlag=true; //this flag shows that if the ride is picked-up or not, by setting it to true means that ride is picked up
+                            cardRideButtons.setVisibility(View.INVISIBLE); //hide the card view for ride buttons because there is no need of them more
+                            loadingDialog.dismiss(); //vanish the loading dialog
                         }
                     }, new Response.ErrorListener() {
                         @Override
@@ -275,21 +283,22 @@ public class DriverHome extends AppCompatActivity
 
                         }
                     });
-                    queue.add(request);
-                    loadingDialog.show();
+                    queue.add(request); //starts the request
+                    loadingDialog.show(); //displays the loading dialog
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
             }
         });
-        txtRiderName=findViewById(R.id.txtRiderName);
-        btnCallRider=findViewById(R.id.btnCallRider);
+        txtRiderName=findViewById(R.id.txtRiderName); //Text View on the rider-info card view to show the rider name
+        btnCallRider=findViewById(R.id.btnCallRider); //button on the card view to call the current rider
         btnCallRider.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //call the rider
-                String riderNumber=Common.currentRide.getRider().getPhone();
+                String riderNumber=Common.currentRide.getRider().getPhone(); //gets the current rider number
+                //checking call permission on the runtime
                 int permissionCheck = ContextCompat.checkSelfPermission(DriverHome.this, Manifest.permission.CALL_PHONE);
 
                 if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -297,29 +306,30 @@ public class DriverHome extends AppCompatActivity
                             DriverHome.this,
                             new String[]{Manifest.permission.CALL_PHONE},
                             123);
-                    startActivity(new Intent(Intent.ACTION_CALL).setData(Uri.parse("tel:"+riderNumber)));
                 } else {
                     startActivity(new Intent(Intent.ACTION_CALL).setData(Uri.parse("tel:"+riderNumber)));
                 }
             }
         });
-        notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        txtDistance=findViewById(R.id.txtDistance);
-        txtDuration=findViewById(R.id.txtDuration);
-        btnEndRide=findViewById(R.id.btnEndRide);
+        notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE); //generates the notifications for the driver
+        txtDistance=findViewById(R.id.txtDistance); //text view to show the distance remaining to the destination
+        txtDuration=findViewById(R.id.txtDuration); //text view to show the time remaining to reach the destination
+        btnEndRide=findViewById(R.id.btnEndRide); //button to end the ride after reaching the the destination (will work only if the rider is picked up by the driver)
         btnEndRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (pickUpFlag){
+                    //if the ride is picked up by the driver
                     //code to end ride
+                    //request the API to end the ride
                     String requestUrl=Common.ZAT_API_HOST+"Rides/"+Common.currentRide.getId()+"/EndRide?Latitude="+Common.currentLat+"&Longitude="+Common.currentLng;
                     JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            loadingDialog.dismiss();
-                            getPaymentDetails(response);
-                            endRide();
-                            loadUser();
+                            loadingDialog.dismiss(); //vanish the waiting dialog
+                            getPaymentDetails(response); //sending the response to other method to get payment details about this ride
+                            endRide(); //resets the UI
+                            loadUser(); //refreshes the driver's details
 
                         }
                     }, new Response.ErrorListener() {
@@ -328,78 +338,96 @@ public class DriverHome extends AppCompatActivity
                             //Log.e("ActiveRide",error.getMessage());
                         }
                     });
-                    queue.add(request);
-                    loadingDialog.show();
+                    queue.add(request); //start the request
+                    loadingDialog.show(); //shows the waiting dialog
                 }
                 else {
+                    //if the ride is not picked up, the driver has other options, i.e. transfer or cancel the ride, at this point
                     Toast.makeText(DriverHome.this,"You cannot end a ride before pick-up",Toast.LENGTH_SHORT).show();
                 }
 
             }
         });
-        queue=Volley.newRequestQueue(DriverHome.this);
+        queue=Volley.newRequestQueue(DriverHome.this); //initiating the Volley Request Queue
         verifyUserAccount();
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        toolbar = findViewById(R.id.toolbar); //custom made toolbar
+        setSupportActionBar(toolbar); //set custom toolbar as the action bar
+
+        //initializing location variable to do constant location updates
         location=new Location(this, new locationListener() {
             @Override
             public void locationResponse(LocationResult response) {
+                //method of the anonymous class to get time to time location updates
+
+                //setting up latest location
                 Common.currentLat=response.getLastLocation().getLatitude();
                 Common.currentLng=response.getLastLocation().getLongitude();
+
                 updateLocation();
                 getActiveRide();
                 setActiveStatus(true);
-                if (destination!=null){
 
+                if (destination!=null){
+                    //there is a destination set then there must be a ride, so transform the UI for a ride
+
+                    //remove old things on the map
                     if(currentLocationMarker!=null)
                         currentLocationMarker.remove();
                     if(blackPolyline!=null)
                         blackPolyline.remove();
                     if (greyPolyline!=null)
                         greyPolyline.remove();
+                    //gets a newer direction according to the new current location
                     getDirection();
                 }
                 else{
+                    //but if there is no destination set then just stay on the position and clear the map and display the current location
                     mMap.clear();
                     displayLocation();
                 }
+
                 if (Common.currentRide!=null && pickUpFlag){
+                    //if there is a ride assigned to the driver and that ride is picked up then add the rout details to the server
                     updateRoute();
                 }
             }
         });
-        locationSwitch=findViewById(R.id.locationSwitch);
+        locationSwitch=findViewById(R.id.locationSwitch); //switch to get active and only an active driver can get rides
         locationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b){
+                    //if the driver selects to be online then the application starts location updates
                     location.initializeLocation();
-                    btnMyLocation.setVisibility(View.VISIBLE);
+                    btnMyLocation.setVisibility(View.VISIBLE); //button for showing current location marker will be set to visible
                 }
                 else{
+                    //if the driver sets itself offline
                     if (Common.currentRide==null){
-                        location.stopUpdateLocation();
-                        currentLocationMarker.remove();
-                        mMap.clear();
-                        setActiveStatus(false);
-                        btnMyLocation.setVisibility(View.INVISIBLE);
-                        cardDestinationInfo.setVisibility(View.INVISIBLE);
+                        //the driver can only be offline if there's no ride assigned to it
+                        location.stopUpdateLocation(); //stops the location updates
+                        currentLocationMarker.remove(); //removes the current location marker
+                        mMap.clear(); //clears the map
+                        setActiveStatus(false); //set active status to inactive
+                        btnMyLocation.setVisibility(View.INVISIBLE); //hide the my location button
+                        cardDestinationInfo.setVisibility(View.INVISIBLE); //hide the destination info card view
                     }
                     else{
+                        //if the driver has a ride assigned then the driver can't get offline and the location switch will remain true
                         Toast.makeText(DriverHome.this, "You can't get Offline during a ride", Toast.LENGTH_SHORT).show();
                         locationSwitch.setChecked(true);
                     }
                 }
             }
         });
-        btnMyLocation=findViewById(R.id.btnMyLocation);
+        btnMyLocation=findViewById(R.id.btnMyLocation); //button which will show the current location
         btnMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                markerFlag=false;
+                markerFlag=false; //sets the marker flag t false so that it will come back to the current point
             }
         });
-        polyLineList=new ArrayList<>();
+        polyLineList=new ArrayList<>(); //contains the list of points through which the polyline will be made
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -409,6 +437,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void endRide() {
+        //Method to refresh the map screen to initial
         cardRideButtons.setVisibility(View.INVISIBLE);
         cardRiderInfo.setVisibility(View.INVISIBLE);
         Common.currentRide=null;
@@ -449,6 +478,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void getActiveRide() {
+        //Gets the active ride for the driver from the server
         String requestUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/GetActiveRide";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, requestUrl, "", new Response.Listener<JSONObject>() {
             @Override
@@ -456,13 +486,15 @@ public class DriverHome extends AppCompatActivity
                 Ride ride= new Ride(response);
                 Common.currentRide=ride;
                 if(pickUpFlag){
-                    destination=ride.getDestination();
+                    destination=ride.getDestination(); //if the ride is picked up then the maker will show the destination
                 }
                 else {
+                    //if the ride is not picked up then the marker will show the pickup point
                     destination=ride.getPickUpLocation();
                 }
 
                 if(!rideFlag){
+                    //if the ride is fetched for the fist time through the server then it will create a notification
                     NotificationCompat.Builder rideNotification= new NotificationCompat.Builder(getBaseContext())
                             .setSmallIcon(R.drawable.ic_location)
                             .setContentTitle("New Ride")
@@ -474,6 +506,7 @@ public class DriverHome extends AppCompatActivity
                     cardRiderInfo.setVisibility(View.VISIBLE);
                     txtRiderName.setText(Common.currentRide.getRider().getFullName());
                 }
+                //ride buttons card view will become invisible if the ride is picked up
                 if (!pickUpFlag){
                     cardRideButtons.setVisibility(View.VISIBLE);
                 }
@@ -491,6 +524,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void updateLocation() {
+        //updates the latest location to the server
         String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/UpdateLocation?Latitude="+Common.currentLat+"&Longitude="+Common.currentLng;
         StringRequest request = new StringRequest(Request.Method.GET, locationUrl, new Response.Listener<String>() {
             @Override
@@ -507,6 +541,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void setActiveStatus(boolean status) {
+        //sets the active status on the server
         String locationUrl=Common.ZAT_API_HOST+"Drivers/"+Common.userID+"/ChangeActiveStatus/"+status;
         StringRequest request= new StringRequest(Request.Method.GET, locationUrl, new Response.Listener<String>() {
             @Override
@@ -523,6 +558,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     public void initDrawer(){
+        //initialize the navigation drawer
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -553,6 +589,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void loadUser(){
+        //loads the user details from the server
         loadingDialog.show();
         String requestUrl=Common.ZAT_API_HOST+"drivers/"+Common.userID;
         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONObject>() {
@@ -575,6 +612,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void getUserVehicle() {
+        //gets the information about the user vehicle
         String requestUrl=Common.ZAT_API_HOST+"drivers/"+Common.userID+"/GetVehicle";
         JsonObjectRequest request= new JsonObjectRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONObject>() {
             @Override
@@ -594,13 +632,16 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void verifyUserAccount() {
+        //verifies the user account whether it is authenticated or not
         Common.userID=48;
         loadUser();
     }
 
     private void getDirection(){
-        currentPosition=new LatLng(Common.currentLat, Common.currentLng);
+        //draws a route on the map towards the destination
+        currentPosition=new LatLng(Common.currentLat, Common.currentLng); //current position of the driver
         final String requestApi;
+        //google api to get the direction
             requestApi="https://maps.googleapis.com/maps/api/directions/json?mode=driving&" +
                     "transit_routing_preference=less_driving&origin="+Common.currentLat+","+Common.currentLng+"&" +
                     "destination="+destination.latitude+","+destination.longitude+"&key="+getResources().getString(R.string.google_maps_key);
@@ -616,10 +657,11 @@ public class DriverHome extends AppCompatActivity
                         JSONObject duration=route.getJSONArray("legs").getJSONObject(0).getJSONObject("duration");
                         txtDistance.setText(distance.getString("text"));
                         txtDuration.setText(duration.getString("text"));
-                        cardDestinationInfo.setVisibility(View.VISIBLE);
-                        String encodedPolyline = route.getJSONObject("overview_polyline").getString("points");
+                        cardDestinationInfo.setVisibility(View.VISIBLE); //makes the ride details card view visible, showing the information like distance and time
+                        String encodedPolyline = route.getJSONObject("overview_polyline").getString("points"); //gets the points of the route by decoding the overview polyline response from the google API
                         polyLineList=decodePoly(encodedPolyline);
                         if (!polyLineList.isEmpty()) {
+                            //creates poly line on the map
                             LatLngBounds.Builder builder = new LatLngBounds.Builder();
                             for (LatLng latLng : polyLineList)
                                 builder = builder.include(latLng);
@@ -643,6 +685,7 @@ public class DriverHome extends AppCompatActivity
                             blanckPolylineOptions.jointType(JointType.ROUND);
                             blackPolyline = mMap.addPolyline(blanckPolylineOptions);
                             if(pickUpFlag){
+                                //if the ride is picked up then the new marker will be called as the destination
                                 mMap.addMarker(new MarkerOptions().position(polyLineList.get(polyLineList.size() - 1))
                                         .title("Destination"));
                             }
@@ -714,6 +757,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private List decodePoly(String encoded) {
+        //decodes the polyline
 
         List poly = new ArrayList();
         int index = 0, len = encoded.length();
@@ -748,6 +792,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void setUpLocation() {
+        //checks the location permission on the runtime
         if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[]{
@@ -779,6 +824,7 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void displayLocation(){
+        //displays the current location
         if (Common.currentLat!=null && Common.currentLng!=null){
             if (locationSwitch.isChecked()) {
                 LatLng center=new LatLng(Common.currentLat, Common.currentLng);
