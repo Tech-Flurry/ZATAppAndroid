@@ -902,7 +902,7 @@ public class DriverHome extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -932,11 +932,11 @@ public class DriverHome extends AppCompatActivity
             case R.id.nav_trip_history:
                 showTripHistory();
                 break;
-            case R.id.nav_car_type:
+            case R.id.nav_clear_account:
                 showDialogUpdateCarType();
                 break;
-            case R.id.nav_update_info:
-                showDialogUpdateInfo();
+            case R.id.nav_balance_details:
+                //showDialogUpdateInfo();
                 break;
             case R.id.nav_change_pwd:
                 if(account!=null)

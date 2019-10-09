@@ -14,10 +14,9 @@ import com.sparkers.zatappdriver.R;
 import java.util.ArrayList;
 
 public class historyAdapter extends RecyclerView.Adapter<historyAdapter.ViewHolder>{
-    Context context;
-    ArrayList<History> items;
-    ClickListener listener;
-    ViewHolder viewHolder;
+    private Context context;
+    private ArrayList<History> items;
+    private ClickListener listener;
 
     public historyAdapter(Context context, ArrayList<History> items, ClickListener listener ){
         this.context=context;
@@ -28,7 +27,7 @@ public class historyAdapter extends RecyclerView.Adapter<historyAdapter.ViewHold
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view= LayoutInflater.from(context).inflate(R.layout.history_template,viewGroup,false);
-        viewHolder=new ViewHolder(view, listener);
+        ViewHolder viewHolder = new ViewHolder(view, listener);
         return viewHolder;
     }
 

@@ -5,6 +5,9 @@ import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Ride {
@@ -19,6 +22,7 @@ public class Ride {
     private String VehicleType;
 
     public Ride(JSONObject response){
+        DateFormat jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         try {
             id=response.getLong("RideId");
             rider=new Rider(response.getJSONObject("Rider"));
@@ -33,10 +37,10 @@ public class Ride {
             isCanceled=response.getBoolean("IsCanceled");
             promo= new Promo(response.getJSONObject("ActivePromo"));
             route= new Route(response.getJSONObject("Route"));
-            //bookingTime=new Date(response.getString("BookingTime"));
-            //pickUpTime=new Date(response.getString("PickUpTime"));
-            //dropOffTime= new Date(response.getString("DropOffTime"));
-        } catch (JSONException e) {
+            bookingTime= jsonDateFormat.parse(response.getString("BookingTime"));
+            pickUpTime= jsonDateFormat.parse(response.getString("PickUpTime"));
+            dropOffTime= jsonDateFormat.parse(response.getString("DropOffTime"));
+        } catch (JSONException | ParseException e) {
             e.printStackTrace();
         }
     }
