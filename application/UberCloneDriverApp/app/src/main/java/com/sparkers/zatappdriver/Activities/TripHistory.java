@@ -82,7 +82,7 @@ public class TripHistory extends AppCompatActivity {
     private void getHistory(){
         //gets the completed rides of the driver
         String requestUrl=Common.ZAT_API_HOST+"drivers/"+Common.userID+"/GetCompletedRides";
-        JsonArrayRequest request= new JsonArrayRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONArray>() {
+        final JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, requestUrl, (String) null, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
                 for (int i=0; i<response.length(); i++){
@@ -106,11 +106,7 @@ public class TripHistory extends AppCompatActivity {
                                                     public void onResponse(JSONObject response) {
                                                         PaymentDetails paymentDetails= new PaymentDetails(response);
                                                         final DateFormat format= new SimpleDateFormat("dd MMM yyyy '-' hh:mm a");
-                                                        double sec = (ride.getBookingTime().getTime()-ride.getDropOffTime().getTime()) / 1000 % 60;
-                                                        double min=sec/60;
-                                                        double hrs=min/60;
-
-                                                        History history= new History(pickUpAddress,dropAddress,min+"",ride.getId(),format.format(ride.getBookingTime()),ride.getRider().getName(),paymentDetails);
+                                                        History history = new History(pickUpAddress, dropAddress, Common.timeSpanString(ride.getBookingTime(), ride.getDropOffTime()), ride.getId(), format.format(ride.getBookingTime()), ride.getRider().getName(), paymentDetails);
                                                         listData.add(history);
                                                         Collections.sort(listData, new Comparator<History>() {
                                                             @Override

@@ -9,6 +9,8 @@ import com.sparkers.zatappdriver.Model.Ride;
 import com.sparkers.zatappdriver.Retrofit.FCMClient;
 import com.sparkers.zatappdriver.Retrofit.RetrofitClient;
 
+import java.util.Date;
+
 public class Common {
     public static final String driver_tbl="Drivers";
     public static final String user_driver_tbl="DriversInformation";
@@ -41,5 +43,18 @@ public class Common {
     }
     public static IFCMService getFCMService(){
         return FCMClient.getClient(fcmURL).create(IFCMService.class);
+    }
+
+    public static String timeSpanString(Date date1, Date date2) {
+        double sec = (date2.getTime() - date1.getTime()) / 1000;
+        double min = sec / 60;
+        double hr = min / 60;
+        if (min < 1) {
+            return String.format("%.2f sec.", sec);
+        } else if (hr < 1) {
+            return String.format("%.2f min.", min);
+        } else {
+            return String.format("%.2f hr.", hr);
+        }
     }
 }

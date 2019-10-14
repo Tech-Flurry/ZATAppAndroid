@@ -78,20 +78,10 @@ public class TripDetail extends AppCompatActivity implements OnMapReadyCallback 
             txtDriverAmount.setText(String.format("Rs. %.2f", history.getPaymentDetails().getDriverAmount()));
             txtDiscount.setText(String.format("Rs. %.2f", history.getPaymentDetails().getDiscount()));
             txtZATAmount.setText(String.format("Rs. %.2f", history.getPaymentDetails().getServiceCharges()));
-            txtTime.setText(String.format("%s min", history.getTime()));
+            txtTime.setText(history.getTime());
             txtTo.setText(history.getEndAddress());
             txtFrom.setText(history.getStartAddress());
             getRoute();
-
-            //add marker
-            //String[] location_end = getIntent().getStringExtra("location_end").split(",");
-            //LatLng dropOff = new LatLng(Double.parseDouble(location_end[0]), Double.parseDouble(location_end[1]));
-
-            //mMap.addMarker(new MarkerOptions().position(dropOff)
-              //      .title("Drop Off Here")
-                //    .icon(BitmapDescriptorFactory.fromResource(R.drawable.destination_marker)));
-
-            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(dropOff, 12.0f));
         }
     }
 
