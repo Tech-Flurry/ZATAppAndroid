@@ -3,7 +3,9 @@ package com.sparkers.zatappdriver.Model;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class PaymentDetails {
+import java.io.Serializable;
+
+public class PaymentDetails implements Serializable {
     private double totalFare, gst, serviceCharges, discount, gTotal, driverAmount;
 
     public PaymentDetails(double totalFare, double gst, double serviceCharges, double discount, double gTotal, double driverAmount) {

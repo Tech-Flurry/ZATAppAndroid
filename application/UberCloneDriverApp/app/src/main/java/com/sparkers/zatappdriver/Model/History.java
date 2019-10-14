@@ -1,22 +1,29 @@
 package com.sparkers.zatappdriver.Model;
 
-public class History {
-    private String startAddress,endAddress,time,distance,locationStart,locationEnd,tripDate,name;
-    private double total;
+import com.google.android.gms.maps.model.LatLng;
+
+import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.List;
+
+public class History implements Serializable {
+    private String startAddress,endAddress,time,tripDate,name;
+    private PaymentDetails paymentDetails;
+
+    private long rideId;
     public History(){
 
     }
 
-    public History(String startAddress, String endAddress, String time, String distance, String locationStart, String locationEnd, String tripDate, String name, double total) {
+    public History(String startAddress, String endAddress, String time, long rideId, String tripDate, String name, PaymentDetails paymentDetails) {
         this.startAddress = startAddress;
         this.endAddress = endAddress;
         this.time = time;
-        this.distance = distance;
-        this.locationStart = locationStart;
-        this.locationEnd = locationEnd;
+        this.rideId = rideId;
         this.tripDate = tripDate;
         this.name = name;
-        this.total = total;
+        this.paymentDetails=paymentDetails;
     }
 
     public String getStartAddress() {
@@ -43,28 +50,9 @@ public class History {
         this.time = time;
     }
 
-    public String getDistance() {
-        return distance;
-    }
 
-    public void setDistance(String distance) {
-        this.distance = distance;
-    }
-
-    public String getLocationStart() {
-        return locationStart;
-    }
-
-    public void setLocationStart(String locationStart) {
-        this.locationStart = locationStart;
-    }
-
-    public String getLocationEnd() {
-        return locationEnd;
-    }
-
-    public void setLocationEnd(String locationEnd) {
-        this.locationEnd = locationEnd;
+    public PaymentDetails getPaymentDetails() {
+        return paymentDetails;
     }
 
     public String getTripDate() {
@@ -83,11 +71,7 @@ public class History {
         this.name = name;
     }
 
-    public double getTotal() {
-        return total;
-    }
-
-    public void setTotal(double total) {
-        this.total = total;
+    public long getRideId() {
+        return rideId;
     }
 }

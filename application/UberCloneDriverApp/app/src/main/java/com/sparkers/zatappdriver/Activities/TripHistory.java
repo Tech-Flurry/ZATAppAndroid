@@ -70,12 +70,15 @@ public class TripHistory extends AppCompatActivity {
         adapter = new historyAdapter(this, listData, new ClickListener() {
             @Override
             public void onClick(View view, int index) {
-
+                Intent i= new Intent(TripHistory.this, TripDetail.class);
+                i.putExtra("History",listData.get(index));
+                startActivity(i);
             }
         });
         rvHistory.setAdapter(adapter);
         getHistory();
     }
+
     private void getHistory(){
         //gets the completed rides of the driver
         String requestUrl=Common.ZAT_API_HOST+"drivers/"+Common.userID+"/GetCompletedRides";
@@ -106,7 +109,8 @@ public class TripHistory extends AppCompatActivity {
                                                         double sec = (ride.getBookingTime().getTime()-ride.getDropOffTime().getTime()) / 1000 % 60;
                                                         double min=sec/60;
                                                         double hrs=min/60;
-                                                        History history= new History(pickUpAddress,dropAddress,min+" mins",ride.getRoute().getTotalDistance()+"meters","","",format.format(ride.getBookingTime()),ride.getRider().getName(),paymentDetails.getTotalFare());
+
+                                                        History history= new History(pickUpAddress,dropAddress,min+"",ride.getId(),format.format(ride.getBookingTime()),ride.getRider().getName(),paymentDetails);
                                                         listData.add(history);
                                                         Collections.sort(listData, new Comparator<History>() {
                                                             @Override
@@ -170,6 +174,7 @@ public class TripHistory extends AppCompatActivity {
         queue.add(request);
         loadingDialog.show();
     }
+
     private void initRecyclerView(){
         rvHistory = findViewById(R.id.rvHistory);
         rvHistory.setHasFixedSize(true);

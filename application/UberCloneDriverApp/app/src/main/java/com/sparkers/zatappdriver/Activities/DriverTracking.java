@@ -204,11 +204,11 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                                 driverHistory.setStartAddress(legsObject.getString("start_address"));
                                 driverHistory.setEndAddress(legsObject.getString("end_address"));
                                 driverHistory.setTime(String.valueOf(timeValue));
-                                driverHistory.setDistance(String.valueOf(distanceValue));
-                                driverHistory.setTotal(Common.formulaPrice(distanceValue, timeValue));
-                                driverHistory.setLocationStart(String.format("%f,%f", pickupLocation.latitude, pickupLocation.longitude));
-                                driverHistory.setLocationEnd(String.format("%f,%f", Common.currentLat, Common.currentLng));
-                                driverHistory.setTripDate(date);
+                               // driverHistory.setDistance(String.valueOf(distanceValue));
+                                //driverHistory.setTotal(Common.formulaPrice(distanceValue, timeValue));
+                                //driverHistory.setLocationStart(String.format("%f,%f", pickupLocation.latitude, pickupLocation.longitude));
+                                //driverHistory.setLocationEnd(String.format("%f,%f", Common.currentLat, Common.currentLng));
+                                //driverHistory.setTripDate(date);
                                 historyDriver.push().setValue(driverHistory);
 
                                 History riderHistory = new History();
@@ -216,10 +216,10 @@ public class DriverTracking extends AppCompatActivity implements OnMapReadyCallb
                                 riderHistory.setStartAddress(legsObject.getString("start_address"));
                                 riderHistory.setEndAddress(legsObject.getString("end_address"));
                                 riderHistory.setTime(String.valueOf(timeValue));
-                                riderHistory.setDistance(String.valueOf(distanceValue));
-                                riderHistory.setTotal(Common.formulaPrice(distanceValue, timeValue));
-                                riderHistory.setLocationStart(String.format("%f,%f", pickupLocation.latitude, pickupLocation.longitude));
-                                riderHistory.setLocationEnd(String.format("%f,%f", Common.currentLat, Common.currentLng));
+                                //riderHistory.setDistance(String.valueOf(distanceValue));
+                                //riderHistory.setTotal(Common.formulaPrice(distanceValue, timeValue));
+                                //riderHistory.setLocationStart(String.format("%f,%f", pickupLocation.latitude, pickupLocation.longitude));
+                                //riderHistory.setLocationEnd(String.format("%f,%f", Common.currentLat, Common.currentLng));
                                 riderHistory.setTripDate(date);
                                 historyRider.push().setValue(riderHistory);
 

@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="10"
     tools:context=".Activities.TripDetail" >
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toTopOf="parent"
+        map:popupTheme="@style/Theme.AppCompat.Light"
+        map:title="Ride Details" />
+
     <LinearLayout
+        android:id="@+id/lineraLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
         android:layout_weight="7"
-        android:weightSum="10">
+        android:orientation="vertical"
+        android:weightSum="10"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/toolbar">
 
         <android.support.v7.widget.CardView
             android:layout_width="match_parent"
@@ -22,169 +38,219 @@
             map:cardCornerRadius="10dp"
             map:cardElevation="10dp">
 
-            <LinearLayout
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/linearLayout4"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="match_parent">
 
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/txtDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="40dp"
-                    android:orientation="vertical">
+                    android:layout_marginTop="16dp"
+                    android:text="WEDNESDAY"
+                    android:textSize="20sp"
+                    map:layout_constraintEnd_toEndOf="parent"
+                    map:layout_constraintStart_toStartOf="parent"
+                    map:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView
-                        android:id="@+id/txtDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="WEDNESDAY"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/txtFee"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="$30.0"
-                        android:textColor="#27aa0b"
-                        android:textSize="50sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/txtFee"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
-                    android:orientation="vertical">
+                    android:layout_marginTop="8dp"
+                    android:text="$30.0"
+                    android:textColor="#27aa0b"
+                    android:textSize="50sp"
+                    android:textStyle="bold"
+                    map:layout_constraintEnd_toEndOf="@+id/txtDate"
+                    map:layout_constraintStart_toStartOf="@+id/txtDate"
+                    map:layout_constraintTop_toBottomOf="@+id/txtDate" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TRIP EARNINGS"
-                        android:textSize="20sp" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/textView6"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="DRIVER AMOUNT"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toStartOf="@+id/txtDriverFare"
+                    map:layout_constraintStart_toStartOf="parent"
+                    map:layout_constraintTop_toBottomOf="@+id/txtFee" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="BASE FARE"
-                            android:textSize="24sp" />
+                <TextView
+                    android:id="@+id/txtDriverFare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="$2.55"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toEndOf="parent"
+                    map:layout_constraintTop_toTopOf="@+id/textView6" />
 
-                        <TextView
-                            android:id="@+id/txtBaseFare"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="$2.55"
-                            android:textSize="24sp" />
-                    </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/textView10"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="ZAT AMOUNT"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toStartOf="@+id/txtZatAmount"
+                    map:layout_constraintStart_toStartOf="@+id/textView6"
+                    map:layout_constraintTop_toBottomOf="@+id/textView6" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="TIME"
-                            android:textSize="24sp" />
+                <TextView
+                    android:id="@+id/txtZatAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="$2.55"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toEndOf="@+id/txtDriverFare"
+                    map:layout_constraintTop_toBottomOf="@+id/txtDriverFare" />
 
-                        <TextView
-                            android:id="@+id/txtDuration"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="3 min"
-                            android:textSize="24sp" />
-                    </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/textView11"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="DISCOUNT"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toStartOf="@+id/txtDiscount"
+                    map:layout_constraintStart_toStartOf="@+id/textView10"
+                    map:layout_constraintTop_toBottomOf="@+id/textView10" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="DISTANCE"
-                            android:textSize="24sp" />
+                <TextView
+                    android:id="@+id/txtDiscount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="$2.55"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toEndOf="@+id/txtZatAmount"
+                    map:layout_constraintTop_toBottomOf="@+id/txtZatAmount" />
 
-                        <TextView
-                            android:id="@+id/txtDistance"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="10 km"
-                            android:textSize="24sp" />
-                    </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:layout_weight="2"
-                        android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/textView12"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="TIME"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toStartOf="@+id/txtDuration"
+                    map:layout_constraintStart_toStartOf="@+id/textView11"
+                    map:layout_constraintTop_toBottomOf="@+id/textView11" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="ESTIMATE PAYOUT"
-                            android:textColor="@android:color/black"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/txtDuration"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="3 min"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toEndOf="@+id/txtDiscount"
+                    map:layout_constraintTop_toBottomOf="@+id/txtDiscount" />
 
-                        <TextView
-                            android:id="@+id/txtEstimatedPayout"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="$10.55"
-                            android:textColor="@android:color/black"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                <TextView
+                    android:id="@+id/textView13"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="DISTANCE"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toStartOf="@+id/txtDistance"
+                    map:layout_constraintStart_toStartOf="@+id/textView12"
+                    map:layout_constraintTop_toBottomOf="@+id/textView12" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                <TextView
+                    android:id="@+id/txtDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="10 km"
+                    android:textSize="18sp"
+                    map:layout_constraintEnd_toEndOf="@+id/txtDuration"
+                    map:layout_constraintTop_toBottomOf="@+id/txtDuration" />
 
-                        <TextView
-                            android:id="@+id/txtFrom"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="From"
-                            android:textSize="20sp" />
+                <TextView
+                    android:id="@+id/From "
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="FROM"
+                    android:textSize="18sp"
+                    map:layout_constraintStart_toStartOf="@+id/textView13"
+                    map:layout_constraintTop_toBottomOf="@+id/textView13" />
 
-                        <TextView
-                            android:id="@+id/txtTo"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="To"
-                            android:textSize="20sp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
+                <TextView
+                    android:id="@+id/from "
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="TO "
+                    android:textSize="18sp"
+                    map:layout_constraintStart_toStartOf="@+id/textView13"
+                    map:layout_constraintTop_toBottomOf="@+id/From " />
+
+                <TextView
+                    android:id="@+id/txtFrom"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="DISTANCE"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="14sp"
+                    map:layout_constraintBottom_toBottomOf="@+id/From "
+                    map:layout_constraintEnd_toEndOf="parent"
+                    map:layout_constraintStart_toEndOf="@+id/From "
+                    map:layout_constraintTop_toBottomOf="@+id/txtDistance" />
+
+                <TextView
+                    android:id="@+id/txtTo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="DISTANCE"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="14sp"
+                    map:layout_constraintBottom_toBottomOf="parent"
+                    map:layout_constraintEnd_toEndOf="parent"
+                    map:layout_constraintStart_toEndOf="@+id/from "
+                    map:layout_constraintTop_toBottomOf="@+id/txtFrom" />
+
+
+            </android.support.constraint.ConstraintLayout>
         </android.support.v7.widget.CardView>
     </LinearLayout>
+
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
         android:layout_weight="3"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/lineraLayout"
         tools:context=".Activities.TripDetail">
 
     </fragment>
-</LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
