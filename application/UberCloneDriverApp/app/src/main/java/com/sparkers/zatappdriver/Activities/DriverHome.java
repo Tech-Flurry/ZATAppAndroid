@@ -943,8 +943,9 @@ public class DriverHome extends AppCompatActivity
                 selectPaymentTypeDialog.show();
                 break;
             case R.id.nav_change_pwd:
-                if(account!=null)
-                    showDialogChangePwd();
+                Intent intentChangePass = new Intent(DriverHome.this, ChangePasswordActivity.class);
+                intentChangePass.putExtra("DriverId", Common.userID);
+                startActivity(intentChangePass);
                 break;
             case R.id.nav_sign_out:
                 signOut();
