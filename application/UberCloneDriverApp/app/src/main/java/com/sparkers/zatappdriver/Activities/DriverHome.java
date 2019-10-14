@@ -933,7 +933,9 @@ public class DriverHome extends AppCompatActivity
                 showTripHistory();
                 break;
             case R.id.nav_clear_account:
-                showDialogUpdateCarType();
+                Intent i = new Intent(DriverHome.this, ClearAccountActivity.class);
+                i.putExtra("DriverId", Common.userID);
+                startActivity(i);
                 break;
             case R.id.nav_balance_details:
                 //showDialogUpdateInfo();

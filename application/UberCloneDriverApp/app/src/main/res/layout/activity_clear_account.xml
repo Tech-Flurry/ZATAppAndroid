@@ -18,4 +18,81 @@
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/Theme.AppCompat.Light"
         app:title="Clear Account" />
+
+    <Button
+        android:id="@+id/btnSubmitClearAccount"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="32dp"
+        android:text="Do Transaction"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <EditText
+        android:id="@+id/edtRefNumber"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:ems="10"
+        android:hint="Enter Reference Number"
+        android:inputType="textPersonName"
+        app:layout_constraintBottom_toTopOf="@+id/edtAmount"
+        app:layout_constraintEnd_toEndOf="@+id/edtAmount"
+        app:layout_constraintStart_toStartOf="@+id/edtAmount" />
+
+    <EditText
+        android:id="@+id/edtAmount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:ems="10"
+        android:hint="Enter the amount of Transaction"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toTopOf="@+id/btnSubmitClearAccount"
+        app:layout_constraintEnd_toEndOf="@+id/btnSubmitClearAccount"
+        app:layout_constraintStart_toStartOf="@+id/btnSubmitClearAccount" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toTopOf="@+id/txtRequiredError"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:srcCompat="@drawable/transactpic" />
+
+    <Spinner
+        android:id="@+id/spinAccountType"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:entries="@array/payment_options"
+        app:layout_constraintBottom_toTopOf="@+id/edtRefNumber"
+        app:layout_constraintEnd_toEndOf="@+id/edtRefNumber"
+        app:layout_constraintStart_toStartOf="@+id/edtRefNumber" />
+
+    <TextView
+        android:id="@+id/txtRequiredError"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="*All Fields are Required"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="12sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/spinAccountType"
+        app:layout_constraintEnd_toEndOf="@+id/spinAccountType"
+        app:layout_constraintStart_toStartOf="@+id/spinAccountType" />
+
+
 </android.support.constraint.ConstraintLayout>
