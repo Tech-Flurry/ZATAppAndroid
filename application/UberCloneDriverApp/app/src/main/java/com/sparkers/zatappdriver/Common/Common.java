@@ -9,6 +9,8 @@ import com.sparkers.zatappdriver.Model.Ride;
 import com.sparkers.zatappdriver.Retrofit.FCMClient;
 import com.sparkers.zatappdriver.Retrofit.RetrofitClient;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Common {
@@ -29,6 +31,7 @@ public class Common {
     public static Ride currentRide;
     public static final String baseURL="https://maps.googleapis.com";
     public static final String fcmURL="https://fcm.googleapis.com/";
+    public static DateFormat jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
     static{
         APPLICATION_SERVICE_BOUNDS=new LatLngBounds(new LatLng(31.299430,73.803619), new LatLng(31.330596,73.800527));
     }

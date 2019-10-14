@@ -98,6 +98,7 @@ import com.sparkers.zatappdriver.Common.Common;
 import com.sparkers.zatappdriver.Helpers.CancelingRideDialog;
 import com.sparkers.zatappdriver.Helpers.LoadingDialog;
 import com.sparkers.zatappdriver.Helpers.PaymentDetailsDialog;
+import com.sparkers.zatappdriver.Helpers.SelectPaymentTypeDialog;
 import com.sparkers.zatappdriver.Helpers.TransferingRideDialog;
 import com.sparkers.zatappdriver.Interfaces.locationListener;
 import com.sparkers.zatappdriver.Messages.Errors;
@@ -938,7 +939,8 @@ public class DriverHome extends AppCompatActivity
                 startActivity(i);
                 break;
             case R.id.nav_balance_details:
-                //showDialogUpdateInfo();
+                SelectPaymentTypeDialog selectPaymentTypeDialog = new SelectPaymentTypeDialog(DriverHome.this, Common.userID);
+                selectPaymentTypeDialog.show();
                 break;
             case R.id.nav_change_pwd:
                 if(account!=null)

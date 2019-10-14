@@ -1,7 +1,6 @@
 package com.sparkers.zatappdriver.Activities;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,22 +19,15 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.gson.JsonArray;
 import com.sparkers.zatappdriver.Common.Common;
 import com.sparkers.zatappdriver.Helpers.LoadingDialog;
 import com.sparkers.zatappdriver.Model.History;
 import com.sparkers.zatappdriver.Model.PaymentDetails;
 import com.sparkers.zatappdriver.Model.Ride;
-import com.sparkers.zatappdriver.Model.Vehicle;
 import com.sparkers.zatappdriver.R;
-import com.sparkers.zatappdriver.recyclerViewHistory.ClickListener;
-import com.sparkers.zatappdriver.recyclerViewHistory.historyAdapter;
+import com.sparkers.zatappdriver.RecyclerView.ClickListener;
+import com.sparkers.zatappdriver.RecyclerView.historyAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,14 +36,12 @@ import org.json.JSONObject;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 
 public class TripHistory extends AppCompatActivity {
-    DatabaseReference riderHistory;
     RecyclerView.LayoutManager layoutManager;
     RecyclerView rvHistory;
     historyAdapter adapter;

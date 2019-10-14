@@ -1,6 +1,7 @@
 package com.sparkers.zatappdriver.Model;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.sparkers.zatappdriver.Common.Common;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,7 +23,6 @@ public class Ride {
     private String VehicleType;
 
     public Ride(JSONObject response){
-        DateFormat jsonDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         try {
             id=response.getLong("RideId");
             rider=new Rider(response.getJSONObject("Rider"));
@@ -37,9 +37,9 @@ public class Ride {
             isCanceled=response.getBoolean("IsCanceled");
             promo= new Promo(response.getJSONObject("ActivePromo"));
             route= new Route(response.getJSONObject("Route"));
-            bookingTime= jsonDateFormat.parse(response.getString("BookingTime"));
-            pickUpTime= jsonDateFormat.parse(response.getString("PickUpTime"));
-            dropOffTime= jsonDateFormat.parse(response.getString("DropOffTime"));
+            bookingTime = Common.jsonDateFormat.parse(response.getString("BookingTime"));
+            pickUpTime = Common.jsonDateFormat.parse(response.getString("PickUpTime"));
+            dropOffTime = Common.jsonDateFormat.parse(response.getString("DropOffTime"));
         } catch (JSONException | ParseException e) {
             e.printStackTrace();
         }

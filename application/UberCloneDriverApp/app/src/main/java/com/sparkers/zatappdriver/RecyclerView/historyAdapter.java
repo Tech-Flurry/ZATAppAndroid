@@ -1,4 +1,4 @@
-package com.sparkers.zatappdriver.recyclerViewHistory;
+package com.sparkers.zatappdriver.RecyclerView;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

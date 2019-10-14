@@ -14,4 +14,6 @@
     <color name="btnSignIn">#4a86ff</color>
     <color name="btnLogIn">#fff</color>
     <color name="btnDeclinePickup">#ba0000</color>
+    <color name="verifiedGreen">@android:color/holo_green_dark</color>
+    <color name="unverifiedRed">@android:color/holo_red_dark</color>
 </resources>
