@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.RingtoneManager;
@@ -148,11 +149,7 @@ public class DriverHome extends AppCompatActivity
 
     private List<LatLng> polyLineList;
     private Marker carMarker;
-    private float v;
-    private double lat, lng;
-    private Handler handler;
-    private LatLng startPosition, endPosition, currentPosition;
-    private int index, next;
+    SharedPreferences preferences;
     private LatLng destination;
     private PolylineOptions polylineOptions, blanckPolylineOptions;
     private Polyline blackPolyline, greyPolyline;
@@ -173,6 +170,7 @@ public class DriverHome extends AppCompatActivity
     private CancelingRideDialog cancelingRideDialog;
     private TransferingRideDialog transferingRideDialog;
     StorageReference storageReference;
+    private LatLng currentPosition;
 
 
     private float getBearing(LatLng startPosition, LatLng endPosition) {
@@ -198,6 +196,7 @@ public class DriverHome extends AppCompatActivity
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //keeps the screen open
         setContentView(R.layout.activity_drawer_home);
+        preferences = getSharedPreferences(getResources().getString(R.string.ZAT_Storage_Preferences), MODE_PRIVATE);
         loadingDialog= new LoadingDialog(DriverHome.this); //initializing loading dialog to be show while the application is calling an API
         cardDestinationInfo=findViewById(R.id.cardDestinationDetails); //card view which shows the destination information
         cardRiderInfo=findViewById(R.id.cardViewRiderInfo); //card view which shows the rider information
@@ -634,8 +633,11 @@ public class DriverHome extends AppCompatActivity
 
     private void verifyUserAccount() {
         //verifies the user account whether it is authenticated or not
-        Common.userID=48;
-        loadUser();
+        if (preferences.contains("userId")) {
+            Common.userID = preferences.getLong("userId", 0);
+            loadUser();
+        } else
+            finish();
     }
 
     private void getDirection(){
@@ -961,123 +963,6 @@ public class DriverHome extends AppCompatActivity
         startActivity(intent);
     }
 
-    private void showDialogUpdateCarType() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(DriverHome.this);
-        alertDialog.setTitle("UPDATE VEHICLE TYPE");
-        LayoutInflater inflater = this.getLayoutInflater();
-        View carType = inflater.inflate(R.layout.layout_update_car_type, null);
-        final RadioButton rbUberX=carType.findViewById(R.id.rbUberX);
-        final RadioButton rbUberBlack=carType.findViewById(R.id.rbUberBlack);
-
-        if(Common.currentDriver.getVehicle().equals("UberX"))
-            rbUberX.setChecked(true);
-        else if(Common.currentDriver.getVehicle().equals("Uber Black"))
-            rbUberBlack.setChecked(true);
-
-        alertDialog.setView(carType);
-        alertDialog.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(DriverHome.this);
-                waitingDialog.show();
-                Map<String, Object> updateInfo=new HashMap<>();
-                if(rbUberX.isChecked())
-                    updateInfo.put("carType", rbUberX.getText().toString());
-                else if(rbUberBlack.isChecked())
-                    updateInfo.put("carType", rbUberBlack.getText().toString());
-
-                /*DatabaseReference driverInformation = FirebaseDatabase.getInstance().getReference(Common.user_driver_tbl);
-                driverInformation.child(Common.userID)
-                        .updateChildren(updateInfo)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                waitingDialog.dismiss();
-                                if(task.isSuccessful())
-                                    Toast.makeText(DriverHome.this,"Information Updated!",Toast.LENGTH_SHORT).show();
-                                else
-                                    Toast.makeText(DriverHome.this,"Information Update Failed!",Toast.LENGTH_SHORT).show();
-
-                            }
-                        });
-                driverInformation.child(Common.userID)
-                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                Common.currentUser=dataSnapshot.getValue(User.class);
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });*/
-            }
-        });
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        alertDialog.show();
-    }
-
-    private void showDialogUpdateInfo() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(DriverHome.this);
-        alertDialog.setTitle("UPDATE INFORMATION");
-        LayoutInflater inflater = this.getLayoutInflater();
-        View layout_pwd = inflater.inflate(R.layout.layout_update_information, null);
-        final MaterialEditText etName = (MaterialEditText) layout_pwd.findViewById(R.id.etName);
-        final MaterialEditText etPhone = (MaterialEditText) layout_pwd.findViewById(R.id.etPhone);
-        final ImageView image_upload = (ImageView) layout_pwd.findViewById(R.id.imageUpload);
-        image_upload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                chooseImage();
-            }
-        });
-        alertDialog.setView(layout_pwd);
-        alertDialog.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-                final android.app.AlertDialog waitingDialog = new SpotsDialog(DriverHome.this);
-                waitingDialog.show();
-                String name = etName.getText().toString();
-                String phone = etPhone.getText().toString();
-
-                Map<String, Object> updateInfo = new HashMap<>();
-                if(!TextUtils.isEmpty(name))
-                    updateInfo.put("name", name);
-                if(!TextUtils.isEmpty(phone))
-                    updateInfo.put("phone",phone);
-                DatabaseReference driverInformation = FirebaseDatabase.getInstance().getReference(Common.user_driver_tbl);
-                /*driverInformation.child(Common.userID)
-                        .updateChildren(updateInfo)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                waitingDialog.dismiss();
-                                if(task.isSuccessful())
-                                    Toast.makeText(DriverHome.this,"Information Updated!",Toast.LENGTH_SHORT).show();
-                                else
-                                    Toast.makeText(DriverHome.this,"Information Update Failed!",Toast.LENGTH_SHORT).show();
-
-                            }
-                        });*/
-            }
-        });
-        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        alertDialog.show();
-    }
-
     private void chooseImage() {
         Dexter.withActivity(this)
                 .withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -1248,45 +1133,10 @@ public class DriverHome extends AppCompatActivity
     }
 
     private void signOut() {
-        if(account!=null) {
-            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
-                @Override
-                public void onResult(@NonNull Status status) {
-                    if (status.isSuccess()) {
-                        Intent intent = new Intent(DriverHome.this, Login.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(DriverHome.this, "Could not log out", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-
-        }
-    }
-
-    private class PlaceItems{
-        public PlaceItems(String id, String name) {
-            Id = id;
-            this.name = name;
-        }
-
-        String Id, name;
-
-        public String getId() {
-            return Id;
-        }
-
-        public void setId(String id) {
-            Id = id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.remove("userId");
+        editor.remove("loggedInFlag");
+        editor.apply();
+        finish();
     }
 }

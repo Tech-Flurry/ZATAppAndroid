@@ -29,6 +29,7 @@
     <string name="password">Password</string>
     <string name="name">Name</string>
     <string name="phone">Phone</string>
+    <string name="ZAT_Storage_Preferences" translatable="false">zat_sto_pref_occoolullayasren_beta_tag_spark_like_a_star</string>
     <string name="title_activity_driver_tracking">Map</string>
     <string name="title_activity_trip_detail">Map</string>
     <string name="title_activity_drawer_home">ZAT-Driver</string>

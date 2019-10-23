@@ -1,17 +1,22 @@
 package com.sparkers.zatappdriver.Common;
 
+import android.content.SharedPreferences;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.sparkers.zatappdriver.Interfaces.IFCMService;
 import com.sparkers.zatappdriver.Interfaces.googleAPIInterface;
 import com.sparkers.zatappdriver.Model.Driver;
 import com.sparkers.zatappdriver.Model.Ride;
+import com.sparkers.zatappdriver.R;
 import com.sparkers.zatappdriver.Retrofit.FCMClient;
 import com.sparkers.zatappdriver.Retrofit.RetrofitClient;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class Common {
     public static final String driver_tbl="Drivers";
@@ -47,7 +52,6 @@ public class Common {
     public static IFCMService getFCMService(){
         return FCMClient.getClient(fcmURL).create(IFCMService.class);
     }
-
     public static String timeSpanString(Date date1, Date date2) {
         double sec = (date2.getTime() - date1.getTime()) / 1000;
         double min = sec / 60;
